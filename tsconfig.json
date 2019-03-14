@@ -1,0 +1,28 @@
+{
+    "compileOnSave": false,
+    "exclude": [
+        "**/*.spec.ts"
+    ],
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "baseUrl": "./src/",
+        "sourceMap": true,
+        "declaration": true,
+        "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "traceResolution": false,
+        "target": "es5",
+        "typeRoots": [
+            "typings.d.ts",
+            "node_modules/@types"
+        ],
+        "lib": [
+            "es2016",
+            "dom"
+        ],
+        "paths": {
+            "*": [ "../node_modules/*", "*"]
+        }
+    }
+}

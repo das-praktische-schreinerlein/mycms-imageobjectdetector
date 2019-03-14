@@ -1,0 +1,49 @@
+patch-package
+--- a/node_modules/@tensorflow-models/coco-ssd/dist/index.d.ts
++++ b/node_modules/@tensorflow-models/coco-ssd/dist/index.d.ts
+@@ -6,7 +6,7 @@ export interface DetectedObject {
+     class: string;
+     score: number;
+ }
+-export declare function load(base?: ObjectDetectionBaseModel): Promise<ObjectDetection>;
++export declare function load(base?: ObjectDetectionBaseModel, optionalModelPath?: string, optionalWeightPath?: string): Promise<ObjectDetection>;
+ export declare class ObjectDetection {
+     private modelPath;
+     private model;
+--- a/node_modules/@tensorflow-models/coco-ssd/dist/index.js
++++ b/node_modules/@tensorflow-models/coco-ssd/dist/index.js
+@@ -51,12 +51,12 @@ var __read = (this && this.__read) || function (o, n) {
+     return ar;
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+-var tf = require("@tensorflow/tfjs");
++var tf = require("@tensorflow/tfjs-node");
+ var classes_1 = require("./classes");
+ var BASE_PATH = 'https://storage.googleapis.com/tfjs-models/savedmodel/';
+ var version_1 = require("./version");
+ exports.version = version_1.version;
+-function load(base) {
++function load(base, optionalModelPath) {
+     if (base === void 0) { base = 'lite_mobilenet_v2'; }
+     return __awaiter(this, void 0, void 0, function () {
+         var objectDetection;
+@@ -73,7 +73,7 @@ function load(base) {
+                             (base + ". Valid names are 'mobilenet_v1',") +
+                             " 'mobilenet_v2' and 'lite_mobilenet_v2'.");
+                     }
+-                    objectDetection = new ObjectDetection(base);
++                    objectDetection = new ObjectDetection(base, optionalModelPath);
+                     return [4, objectDetection.load()];
+                 case 1:
+                     _a.sent();
+@@ -84,8 +84,8 @@ function load(base) {
+ }
+ exports.load = load;
+ var ObjectDetection = (function () {
+-    function ObjectDetection(base) {
+-        this.modelPath = "" + BASE_PATH + this.getPrefix(base) + "/model.json";
++    function ObjectDetection(basebase, optionalModelPath) {
++        this.modelPath = optionalModelPath || ("" + BASE_PATH + this.getPrefix(base) + "/model.json");
+     }
+     ObjectDetection.prototype.getPrefix = function (base) {
+         return base === 'lite_mobilenet_v2' ? "ssd" + base : "ssd_" + base;
