@@ -5,7 +5,7 @@ import {
     DetectorResultsCacheType
 } from './detectorresult-cache';
 import {FileUtils} from '../../common/utils/file-utils';
-import {BaseObjectDetectionImageObjectRecord} from "@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record";
+import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
 
 export class DetectorResultDirectoryCacheService extends AbstractDetectorResultCacheService {
     constructor(readOnly: boolean, forceUpdate: boolean) {

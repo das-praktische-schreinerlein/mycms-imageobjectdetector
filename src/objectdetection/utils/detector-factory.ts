@@ -41,7 +41,7 @@ export class DetectorFactory {
     };
 
     public static getAvailableDetectorMessage(): string {
-        return 'invalid detectors: use \'tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi\'\n' +
+        return 'invalid detectors: use \'tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile\'\n' +
             '-- attention: tfjs_posenet is very slow\n' +
             '-- attention: faceapi got sometimes exception\n'
     }

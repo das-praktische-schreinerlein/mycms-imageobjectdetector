@@ -8,6 +8,7 @@ global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
 
 require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
 
+import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
 import {DetectorFactory} from './objectdetection/utils/detector-factory';
 import {AbstractObjectDetector} from './objectdetection/abstract-object-detector';
 import {FileUtils} from './common/utils/file-utils';
@@ -66,13 +67,13 @@ DetectorUtils.initDetectors(detectors).then(value => {
     };
     FileUtils.doActionOnFilesFromMediaDir(sourceDir, destDir, '.tmp', mediaTypes,
         function (srcPath, destPath, processorResolve, processorReject) {
-            console.log('RUNNING - detectors on image: ' + srcPath);
+            console.log('RUNNING - detectors on image: ' + LogUtils.sanitizeLogMsg(srcPath));
             DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
-                        console.log('OK found: ' + srcPath +
+                        console.log('OK found: ' + LogUtils.sanitizeLogMsg(srcPath) +
                             ' detector:' + detectedObjects[i].detector +
-                            ' class: ' + detectedObjects[i].keySuggestion +
+                            ' class: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].keySuggestion) +
                             ' score:' + detectedObjects[i].precision +
                             ' x/y/w/h:[', [detectedObjects[i].objX, detectedObjects[i].objY, detectedObjects[i].objWidth,
                                            detectedObjects[i].objHeight].join(','), ']' +
@@ -81,7 +82,7 @@ DetectorUtils.initDetectors(detectors).then(value => {
                 }
                 return processorResolve('OK');
             }).catch(reason => {
-                console.error('ERROR -  detecting results:' + srcPath, reason);
+                console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
                 return breakOnError ? processorReject(reason) : processorResolve(undefined);
             });
         }).then(value1 => {

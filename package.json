@@ -22,9 +22,10 @@
             "linux": "./node_modules/.bin/rimraf assets/models && ./node_modules/.bin/mkdirp assets/models",
             "win32": "node_modules\\.bin\\rimraf assets\\models && node_modules\\.bin\\mkdirp assets\\models"
         },
-        "run-imagefile-detector": "node dist/imagefile-objectdetetor.js",
-        "run-common-imagefile-detector": "node dist/imagefile-objectdetetor.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,faceapi,picasafile --useDirectoryCache",
-        "run-all-imagefile-detector": "node dist/imagefile-objectdetetor.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile --useDirectoryCache",
+        "run-imagefile-detector": "node dist/imagefile-objectdetector.js",
+        "run-common-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,faceapi,picasafile --useDirectoryCache",
+        "run-all-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile --useDirectoryCache",
+        "run-all-queue-detector": "node dist/queue-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile --useDirectoryCache --debug",
         "test": "echo 'no tests'"
     },
     "private": true,
@@ -45,6 +46,8 @@
         "node-fetch": "~2.3.0",
         "promise-serial": "~0.1.5",
         "readdirp": "~2.1.0",
+        "rsmq": "~0.10.0",
+        "rsmq-worker": "~0.5.2",
         "xmlhttprequest": "~1.8.0"
     },
     "devDependencies": {

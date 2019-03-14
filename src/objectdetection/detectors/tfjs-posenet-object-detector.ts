@@ -5,6 +5,7 @@ import {MobileNetMultiplier, OutputStride, PoseNet} from '@tensorflow-models/pos
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
+import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
 
 
 export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
@@ -69,7 +70,7 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
 
                 return resolve(detectedObjects);
             }).catch(error => {
-                console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl, error);
+                console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });
         });
