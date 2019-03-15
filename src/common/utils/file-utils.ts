@@ -52,10 +52,13 @@ export class FileUtils {
                 }
 
                 const funcs = [];
+                let index = 1;
+                const count = Object.keys(media).length;
                 for (const destPath in media) {
+                    const iindex = index;
+                    index = index + 1;
                     funcs.push(function () { return new Promise<string>((processorResolve, processorReject) => {
-                        const patterns = destPath.split(/[\/\\]/);
-                        commandExtender(media[destPath], destPath, processorResolve, processorReject);
+                        commandExtender(media[destPath], destPath, processorResolve, processorReject, iindex, count);
                     });
                     });
                 }

@@ -66,8 +66,8 @@ DetectorUtils.initDetectors(detectors).then(value => {
         'JPG': 'IMAGE'
     };
     FileUtils.doActionOnFilesFromMediaDir(sourceDir, destDir, '.tmp', mediaTypes,
-        function (srcPath, destPath, processorResolve, processorReject) {
-            console.log('RUNNING - detectors on image: ' + LogUtils.sanitizeLogMsg(srcPath));
+        function (srcPath, destPath, processorResolve, processorReject, index, count) {
+            console.log('RUNNING - detectors on image ' + index + '/' + count + ': ' + LogUtils.sanitizeLogMsg(srcPath));
             DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
