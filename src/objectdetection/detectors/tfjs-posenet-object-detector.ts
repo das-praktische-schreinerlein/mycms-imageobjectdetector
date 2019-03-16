@@ -1,11 +1,11 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {Tensor3D} from '@tensorflow/tfjs';
 import * as posenet from '@tensorflow-models/posenet';
 import {MobileNetMultiplier, OutputStride, PoseNet} from '@tensorflow-models/posenet';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
-import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
+import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 
 
 export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
@@ -57,14 +57,14 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             this.detector.estimateMultiplePoses(input, this.imageScaleFactor, this.flipHorizontal, this.outputStride,
                 this.maxPoseDetections).then(predictions => {
-                const detectedObjects: BaseObjectDetectionImageObjectRecord[] = [];
+                const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
-                        DetectorResultUtils.convertPoseToBaseObjectDetectionImageObjectRecord(
+                        DetectorResultUtils.convertPoseToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 

@@ -1,4 +1,4 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {Tensor3D} from '@tensorflow/tfjs';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {FileUtils} from '../../common/utils/file-utils';
@@ -37,8 +37,8 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             // read
             const picasaFile = FileUtils.getDirectoryFromFilePath(imageUrl) + '.picasa.ini';
             const imageFilename = FileUtils.getFilenameFromFilePath(imageUrl);
@@ -74,7 +74,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
             let imageWidth = imgDim[0], imageHeight = imgDim[1];
 
             // extract lines and key-Data
-            const detectedObjects: BaseObjectDetectionImageObjectRecord[] = [];
+            const detectedObjects: ObjectDetectionDetectedObject[] = [];
             let lines = dataImageFile.split('\n');
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
@@ -138,7 +138,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                                 imageDimension: imgDim
                             };
                             detectedObjects.push(
-                                DetectorResultUtils.convertPicasaObjectDetectionToBaseObjectDetectionImageObjectRecord(
+                                DetectorResultUtils.convertPicasaObjectDetectionToObjectDetectionDetectedObject(
                                     this, picasaObject, imageUrl))
                         }
                     }

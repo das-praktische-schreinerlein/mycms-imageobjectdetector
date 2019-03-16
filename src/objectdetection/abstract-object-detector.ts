@@ -1,4 +1,4 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {Tensor3D} from '@tensorflow/tfjs-core';
 import {TensorUtils} from './utils/tensor-utils';
 
@@ -10,8 +10,8 @@ export abstract class AbstractObjectDetector {
 
     public abstract initDetector(): Promise<boolean>;
 
-    public detectFromImageUrl(imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+    public detectFromImageUrl(imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             TensorUtils.readImageFromLocation(imageUrl).then(posenetInput => {
                 this.detectFromCommonInput(posenetInput, imageUrl).then(detectedObjects => {
                     return resolve(detectedObjects);
@@ -24,11 +24,11 @@ export abstract class AbstractObjectDetector {
         });
     }
 
-    public detectFromTensor(tensor: Tensor3D, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
+    public detectFromTensor(tensor: Tensor3D, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return this.detectFromCommonInput(tensor, imageUrl);
     }
 
-    public abstract detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]>;
+    public abstract detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]>;
 
     public abstract getExpectedInputRequirements(): DetectorInputRequirement;
 

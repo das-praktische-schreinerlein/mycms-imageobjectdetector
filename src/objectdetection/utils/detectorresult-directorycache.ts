@@ -3,9 +3,9 @@ import {
     AbstractDetectorResultCacheService,
     DetectorResultCacheEntry,
     DetectorResultsCacheType
-} from './detectorresult-cache';
+} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
 import {FileUtils} from '../../common/utils/file-utils';
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 
 export class DetectorResultDirectoryCacheService extends AbstractDetectorResultCacheService {
     constructor(readOnly: boolean, forceUpdate: boolean) {
@@ -55,7 +55,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
     }
 
     public setImageCacheEntry(detectorResultCache: DetectorResultsCacheType, detectorId: string, imagePath: string,
-                              detectedObjects: BaseObjectDetectionImageObjectRecord[]): DetectorResultsCacheType {
+                              detectedObjects: ObjectDetectionDetectedObject[]): DetectorResultsCacheType {
         // DirectoryCache uses relative filenames
         if (detectedObjects) {
             for (let i = 0; i < detectedObjects.length; i++) {

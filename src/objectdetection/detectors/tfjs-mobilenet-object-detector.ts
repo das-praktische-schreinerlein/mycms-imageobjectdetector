@@ -1,11 +1,11 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import {MobileNet, MobileNetAlpha, MobileNetVersion} from '@tensorflow-models/mobilenet';
 import {Tensor3D} from '@tensorflow/tfjs';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
-import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
+import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 
 
 export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
@@ -55,13 +55,13 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             this.detector.classify(input, this.maxPredictionNumber).then(predictions => {
-                const detectedObjects: BaseObjectDetectionImageObjectRecord[] = [];
+                const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
-                        DetectorResultUtils.convertMobileNetClassToBaseObjectDetectionImageObjectRecord(
+                        DetectorResultUtils.convertMobileNetClassToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 

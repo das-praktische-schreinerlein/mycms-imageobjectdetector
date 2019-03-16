@@ -1,4 +1,8 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {
+    AbstractDetectorResultCacheService,
+    DetectorResultsCacheType
+} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import * as Promise_serial from 'promise-serial';
 import {TensorUtils} from './tensor-utils';
 import {isArray} from 'util';
@@ -6,7 +10,6 @@ import * as fs from 'fs';
 import * as download from 'download';
 import * as mkdirp from 'mkdirp';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
-import {AbstractDetectorResultCacheService, DetectorResultsCacheType} from './detectorresult-cache';
 import {FileUtils} from '../../common/utils/file-utils';
 import {Tensor3D} from '@tensorflow/tfjs-core';
 
@@ -40,8 +43,8 @@ export class DetectorUtils {
 
     public static detectFromImageUrl(detectors: AbstractObjectDetector[], imageUrl: string,
                                      detectorResultCacheService: AbstractDetectorResultCacheService,
-                                     breakOnError: boolean): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+                                     breakOnError: boolean): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             let detectorResultCache: DetectorResultsCacheType = undefined;
             if (detectorResultCacheService) {
                 detectorResultCache = detectorResultCacheService.readImageCache(imageUrl, true);
@@ -83,7 +86,7 @@ export class DetectorUtils {
                 const funcs = [];
                 for (const detector of detectors) {
                     funcs.push(function () {
-                        return new Promise<BaseObjectDetectionImageObjectRecord[]>((processorResolve, processorReject) => {
+                        return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
                             const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl): undefined;
                             if (cacheEntry) {
                                 return processorResolve(cacheEntry.results)
@@ -106,9 +109,9 @@ export class DetectorUtils {
                 }
 
                 Promise_serial(funcs, {parallelize: 1}).then(arrayOfDetectorResults => {
-                    const detectedObjects: BaseObjectDetectionImageObjectRecord[] = [];
+                    const detectedObjects: ObjectDetectionDetectedObject[] = [];
                     for (let i = 0; i < arrayOfDetectorResults.length; i++) {
-                        const detectorResult: BaseObjectDetectionImageObjectRecord[] = arrayOfDetectorResults[i];
+                        const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
                         if (detectorResult) {
                             for (let s = 0; s < detectorResult.length; s++) {
                                 detectedObjects.push(detectorResult[s]);

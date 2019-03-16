@@ -8,13 +8,13 @@ global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
 
 require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
 
-import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
+import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorFactory} from './objectdetection/utils/detector-factory';
 import {AbstractObjectDetector} from './objectdetection/abstract-object-detector';
 import {FileUtils} from './common/utils/file-utils';
 import {DetectorUtils} from './objectdetection/utils/detector-utils';
-import {AbstractDetectorResultCacheService} from './objectdetection/utils/detectorresult-cache';
 import {DetectorResultDirectoryCacheService} from './objectdetection/utils/detectorresult-directorycache';
+import {AbstractDetectorResultCacheService} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
 import * as minimist from 'minimist';
 
 const argv = minimist(process.argv.slice(2));

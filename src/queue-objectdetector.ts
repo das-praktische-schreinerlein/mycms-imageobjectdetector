@@ -8,16 +8,18 @@ global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
 
 require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
 
-import {BaseObjectDetectionImageObjectRecordType} from "@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record";
-import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
+import {
+    ObjectDetectionRequestType, ObjectDetectionResponseType
+} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
+import {AbstractDetectorResultCacheService} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
+import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorFactory} from './objectdetection/utils/detector-factory';
 import {AbstractObjectDetector} from './objectdetection/abstract-object-detector';
 import {DetectorUtils} from './objectdetection/utils/detector-utils';
-import {AbstractDetectorResultCacheService} from './objectdetection/utils/detectorresult-cache';
 import {DetectorResultDirectoryCacheService} from './objectdetection/utils/detectorresult-directorycache';
 import * as minimist from 'minimist';
 import * as RedisSMQ from 'rsmq';
-import * as RSMQrsmqWorker from 'rsmq-worker';
+import * as RSMQWorker from 'rsmq-worker';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -58,7 +60,7 @@ const requestQueueName = 'mycms-objectdetector-request';
 const responseQueueName = 'mycms-objectdetector-response';
 const rsmqOptions = {host: '127.0.0.1', port: 6379, ns: 'rsmq'};
 const rsmq = new RedisSMQ( rsmqOptions );
-const rsmqWorker = new RSMQrsmqWorker(requestQueueName, rsmqOptions);
+const rsmqWorker = new RSMQWorker(requestQueueName, rsmqOptions);
 
 let existingQueues = [];
 myLog('check queues');
@@ -101,7 +103,7 @@ const server = rsmq.listQueuesAsync().then(queues => {
         console.log('Message id : ' + LogUtils.sanitizeLogMsg(id));
         console.log(msg);
 
-        let request: BaseObjectDetectionImageObjectRecordType;
+        let request: ObjectDetectionRequestType;
         try {
             request = JSON.parse(msg.message);
         } catch (error) {
@@ -112,14 +114,18 @@ const server = rsmq.listQueuesAsync().then(queues => {
         // TODO get detector from request
         const imageDetectors: AbstractObjectDetector[] = [];
 
-        console.log('RUNNING - detector on image: ' + LogUtils.sanitizeLogMsg(srcPath), request.detector);
+        console.log('RUNNING - detector on image: ' + LogUtils.sanitizeLogMsg(srcPath), request.detectors);
         DetectorUtils.detectFromImageUrl(imageDetectors, srcPath, detectorCacheService, true).then(detectedObjects => {
             if (detectedObjects) {
                 // map responsedata with requestdata
                 for (let i = 0; i < detectedObjects.length; i++) {
                     detectedObjects[i].fileName = request.fileName;
-                    detectedObjects[i].id = request.id;
                 }
+
+                const response: ObjectDetectionResponseType = {
+                    request: request,
+                    results: detectedObjects
+                };
 
                 rsmq.sendMessage({
                     delay: 1000,

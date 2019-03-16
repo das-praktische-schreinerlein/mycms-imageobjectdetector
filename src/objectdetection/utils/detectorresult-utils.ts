@@ -1,7 +1,7 @@
 import {
-    BaseObjectDetectionImageObjectRecord,
-    BaseObjectDetectionState
-} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+    ObjectDetectionDetectedObject,
+    ObjectDetectionState
+} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {DetectedObject} from '@tensorflow-models/coco-ssd';
 import {Pose} from '@tensorflow-models/posenet';
 import {FaceDetection} from 'face-api.js';
@@ -23,15 +23,15 @@ export interface PicasaObjectDetectionResult {
 
 export class DetectorResultUtils {
 
-    public static convertDetectedObjectToBaseObjectDetectionImageObjectRecord(detector: AbstractObjectDetector,
+    public static convertDetectedObjectToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                               detectedObj: DetectedObject,
-                                                                              imageUrl: string, imageDim: number[]): BaseObjectDetectionImageObjectRecord {
-        return new BaseObjectDetectionImageObjectRecord({
+                                                                              imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+        return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.class || 'Unknown',
             keySuggestion: detectedObj.class || 'Unknown',
             keyCorrection: undefined,
-            state: BaseObjectDetectionState.RUNNING_SUGGESTED,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: detectedObj.bbox[0],
             objY: detectedObj.bbox[1],
             objWidth: detectedObj.bbox[2],
@@ -39,24 +39,19 @@ export class DetectorResultUtils {
             precision: detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
-            descHtml: undefined,
-            descMd: undefined,
-            descTxt: undefined,
-            fileName: imageUrl,
-            id: undefined,
-            name: detectedObj.class || 'Unknown'
-        });
+            fileName: imageUrl
+        };
     }
 
-    public static convertPoseToBaseObjectDetectionImageObjectRecord(detector: AbstractObjectDetector,
+    public static convertPoseToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                     detectedObj: Pose,
-                                                                    imageUrl: string, imageDim: number[]): BaseObjectDetectionImageObjectRecord {
-        return new BaseObjectDetectionImageObjectRecord({
+                                                                    imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+        return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'pose',
             keySuggestion: 'pose',
             keyCorrection: undefined,
-            state: BaseObjectDetectionState.RUNNING_SUGGESTED,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: isNaN(detectedObj.keypoints[0].position.x) ? undefined : detectedObj.keypoints[0].position.x,
             objY: isNaN(detectedObj.keypoints[0].position.y) ? undefined : detectedObj.keypoints[0].position.y,
             objWidth: isNaN(detectedObj.keypoints[0].position.x) ? undefined : 1,
@@ -64,24 +59,19 @@ export class DetectorResultUtils {
             precision: isNaN(detectedObj.score) ? undefined : detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
-            descHtml: undefined,
-            descMd: undefined,
-            descTxt: undefined,
-            fileName: imageUrl,
-            id: undefined,
-            name: 'pose'
-        });
+            fileName: imageUrl
+        };
     }
 
-    public static convertMobileNetClassToBaseObjectDetectionImageObjectRecord(detector: AbstractObjectDetector,
+    public static convertMobileNetClassToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                               detectedObj: mobileNetClass,
-                                                                              imageUrl: string, imageDim: number[]): BaseObjectDetectionImageObjectRecord {
-        return new BaseObjectDetectionImageObjectRecord({
+                                                                              imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+        return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'Unknown',
             keySuggestion: detectedObj.className || 'Unknown',
             keyCorrection: undefined,
-            state: BaseObjectDetectionState.RUNNING_SUGGESTED,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: 0,
             objY: 0,
             objWidth: 1,
@@ -89,24 +79,19 @@ export class DetectorResultUtils {
             precision: detectedObj.probability,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
-            descHtml: undefined,
-            descMd: undefined,
-            descTxt: undefined,
-            fileName: imageUrl,
-            id: undefined,
-            name: detectedObj.className || 'Unknown'
-        });
+            fileName: imageUrl
+        };
     }
 
-    public static convertFaceDetectionToBaseObjectDetectionImageObjectRecord(detector: AbstractObjectDetector,
+    public static convertFaceDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                              detectedObj: FaceDetection,
-                                                                             imageUrl: string): BaseObjectDetectionImageObjectRecord {
-        return new BaseObjectDetectionImageObjectRecord({
+                                                                             imageUrl: string): ObjectDetectionDetectedObject {
+        return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'CommonFace',
             keySuggestion: detectedObj.className || 'CommonFace',
             keyCorrection: undefined,
-            state: BaseObjectDetectionState.RUNNING_SUGGESTED,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: detectedObj.box.left,
             objY: detectedObj.box.top,
             objWidth: detectedObj.box.width,
@@ -114,24 +99,19 @@ export class DetectorResultUtils {
             precision: detectedObj.classScore,
             imgWidth: detectedObj.imageWidth,
             imgHeight: detectedObj.imageHeight,
-            descHtml: undefined,
-            descMd: undefined,
-            descTxt: undefined,
-            fileName: imageUrl,
-            id: undefined,
-            name: detectedObj.className || 'CommonFace'
-        });
+            fileName: imageUrl
+        };
     }
 
-    public static convertPicasaObjectDetectionToBaseObjectDetectionImageObjectRecord(detector: AbstractObjectDetector,
+    public static convertPicasaObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                              detectedObj: PicasaObjectDetectionResult,
-                                                                             imageUrl: string): BaseObjectDetectionImageObjectRecord {
-        return new BaseObjectDetectionImageObjectRecord({
+                                                                             imageUrl: string): ObjectDetectionDetectedObject {
+        return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: (detectedObj.type + '_' + detectedObj.key) || 'CommonFace',
             keySuggestion: (detectedObj.type + '_' + detectedObj.key) || 'CommonFace',
             keyCorrection: undefined,
-            state: BaseObjectDetectionState.RUNNING_SUGGESTED,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: detectedObj.rectangle[0],
             objY: detectedObj.rectangle[1],
             objWidth: detectedObj.rectangle[2] - detectedObj.rectangle[0],
@@ -139,13 +119,8 @@ export class DetectorResultUtils {
             precision: 1,
             imgWidth: detectedObj.imageDimension[0],
             imgHeight: detectedObj.imageDimension[1],
-            descHtml: undefined,
-            descMd: undefined,
-            descTxt: undefined,
-            fileName: imageUrl,
-            id: undefined,
-            name: (detectedObj.type + '_' + detectedObj.key) || 'CommonFace'
-        });
+            fileName: imageUrl
+        };
     }
 
 }

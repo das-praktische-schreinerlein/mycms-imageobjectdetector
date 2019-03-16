@@ -1,11 +1,11 @@
-import {BaseObjectDetectionImageObjectRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseobjectdetectionimageobject-record';
+import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import * as faceapi from 'face-api.js';
 import {FaceDetection} from 'face-api.js';
 import {Tensor3D} from '@tensorflow/tfjs';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
-import {LogUtils} from "@dps/mycms-commons/dist/commons/utils/log.utils";
+import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 
 
 export class FaceApiObjectDetector extends AbstractObjectDetector {
@@ -54,16 +54,16 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<BaseObjectDetectionImageObjectRecord[]> {
-        return new Promise<BaseObjectDetectionImageObjectRecord[]>((resolve, reject) => {
+    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             const tensor: Tensor3D =  input['width']
                 ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS)
                 : <Tensor3D>input;
             faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
-                const detectedObjects: BaseObjectDetectionImageObjectRecord[] = [];
+                const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
-                        DetectorResultUtils.convertFaceDetectionToBaseObjectDetectionImageObjectRecord(
+                        DetectorResultUtils.convertFaceDetectionToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl));
                 }
 
