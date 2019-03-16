@@ -67,6 +67,6 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
     }
 
     protected getCacheFileNameForImagePath(imagePath: string): string {
-        return FileUtils.getDirectoryFromFilePath(imagePath) + 'mycmsod-cache.json';
+        return FileUtils.getDirectoryFromFilePath(imagePath) + '.mycmsod-cache.json';
     }
 }
