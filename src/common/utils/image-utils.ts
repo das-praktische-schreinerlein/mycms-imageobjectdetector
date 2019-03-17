@@ -10,6 +10,7 @@ export class ImageUtils {
     public static readImageMetaDataFromBuffer(buf): Promise<ImageData> {
         return new Promise<ImageData>((resolve, reject) => {
             return ImageUtils.readExifForImage(buf).then(exif => {
+                buf = undefined;
                 if (!exif || !exif['exif']) {
                     return reject('no exifdata found');
                 }
@@ -20,7 +21,8 @@ export class ImageUtils {
                     height: exif['exif']['ExifImageHeight'] || exif['exif']['PixelYDimension'],
                 });
             }).catch(reason => {
-                reject(reason);
+                buf = undefined;
+                return reject(reason);
             })
         });
     }
@@ -29,13 +31,16 @@ export class ImageUtils {
         return new Promise<{}>((resolve, reject) => {
             try {
                 new exifReader.ExifImage({ image : buf }, function (error, exifData) {
+                    buf = undefined;
                     if (error) {
-                        reject(error);
+                        return reject(error);
                     }
-                    resolve(exifData);
+
+                    return resolve(exifData);
                 });
             } catch (error) {
-                reject(error);
+                buf = undefined;
+                return reject(error);
             }
         });
     }

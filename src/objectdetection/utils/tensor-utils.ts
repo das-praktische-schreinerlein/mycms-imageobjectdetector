@@ -7,16 +7,24 @@ export class TensorUtils {
     public static NUMBER_OF_CHANNELS = 3;
 
     public static readImageFromFile(imageFile): Promise<ImageData> {
-        const buffer = fs.readFileSync(imageFile);
-        const imageData = ImageUtils.readImageDataFromBuffer(buffer);
-        return new Promise<ImageData>(resolve => {
-            return resolve(imageData);
+        let buffer;
+        return new Promise<ImageData>((resolve, reject) => {
+            try {
+                buffer = fs.readFileSync(imageFile);
+                const imageData = ImageUtils.readImageDataFromBuffer(buffer);
+
+                buffer = undefined;
+                return resolve(imageData);
+            } catch (error) {
+                buffer = undefined;
+                return reject(error);
+            }
         });
     }
 
     public static readImageFromUrl(imageFile): Promise<ImageData> {
         return new Promise<ImageData>((resolve, reject) => {
-            fetch(imageFile).then(response => {
+            return fetch(imageFile).then(response => {
                 const imageData = ImageUtils.readImageDataFromBuffer(response.body);
                 return resolve(imageData);
             }).catch(reason => {

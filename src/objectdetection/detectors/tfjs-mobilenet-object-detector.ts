@@ -44,7 +44,7 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            mobilenet.load(this.mobileNetVersion, this.mobileNetAlpha, this.getModelBasePath() + 'model.json').then(model => {
+            return mobilenet.load(this.mobileNetVersion, this.mobileNetAlpha, this.getModelBasePath() + 'model.json').then(model => {
                 this.detector = model;
 
                 return resolve(true);
@@ -57,7 +57,7 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
 
     detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            this.detector.classify(input, this.maxPredictionNumber).then(predictions => {
+            return this.detector.classify(input, this.maxPredictionNumber).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
@@ -65,8 +65,10 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 
+                input = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
+                input = undefined;
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

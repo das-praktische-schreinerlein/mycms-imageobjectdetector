@@ -29,7 +29,7 @@ export class DetectorUtils {
                 });
             }
 
-            Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
+            return Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
                 const detectors = [];
                 for (let i = 0; i < arrayOfResults.length; i++) {
                     console.log('initialized detector', arrayOfResults[i].getDetectorId());
@@ -96,7 +96,7 @@ export class DetectorUtils {
                                 return processorResolve(cacheEntry.results)
                             }
 
-                            detector.detectFromCommonInput(input, imageUrl)
+                            return detector.detectFromCommonInput(input, imageUrl)
                                 .then(detectedObjects => {
                                     cacheUpdated = true;
                                     if (detectedObjects) {
@@ -112,7 +112,7 @@ export class DetectorUtils {
                     });
                 }
 
-                Promise_serial(funcs, {parallelize: 1}).then(arrayOfDetectorResults => {
+                return Promise_serial(funcs, {parallelize: 1}).then(arrayOfDetectorResults => {
                     let detectedObjects: ObjectDetectionDetectedObject[] = undefined;
                     for (let i = 0; i < arrayOfDetectorResults.length; i++) {
                         const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
@@ -130,11 +130,21 @@ export class DetectorUtils {
                         detectorResultCacheService.writeImageCache(imageUrl, detectorResultCache);
                     }
 
+                    detectedCachedObjects = undefined;
+                    detectorResultCache = undefined;
+                    input = undefined;
+
                     return resolve(detectedObjects);
                 }).catch(reason => {
+                    detectedCachedObjects = undefined;
+                    detectorResultCache = undefined;
+                    input = undefined;
+
                     return reject(reason);
                 });
             }).catch(reason => {
+                detectedCachedObjects = undefined;
+                detectorResultCache = undefined;
                 return breakOnError ? reject(reason) : resolve(undefined);
             })
         });
@@ -246,7 +256,7 @@ export class DetectorUtils {
 
             }
 
-            Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
+            return Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
                 const subFiles = [];
                 for (let i = 0; i < arrayOfResults.length; i++) {
                     for (let s = 0; s < arrayOfResults[i].length; s++) {

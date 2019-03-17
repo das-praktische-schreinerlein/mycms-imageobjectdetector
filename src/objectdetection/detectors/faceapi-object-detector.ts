@@ -45,7 +45,7 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             const localBasePath = (this.getModelBasePath() + '/').replace(/^file:\/\//, '');
-            faceapi.nets.ssdMobilenetv1.loadFromDisk( localBasePath).then(model => {
+            return faceapi.nets.ssdMobilenetv1.loadFromDisk( localBasePath).then(model => {
                 return resolve(true);
             }, reason => {
                 console.error('ERROR - initialising ' + this.getDetectorId() + '-detector', reason);
@@ -56,10 +56,10 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
 
     detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            const tensor: Tensor3D =  input['width']
+            let tensor: Tensor3D =  input['width']
                 ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS)
                 : <Tensor3D>input;
-            faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
+            return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
@@ -67,8 +67,12 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl));
                 }
 
+                input = undefined;
+                tensor = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
+                input = undefined;
+                tensor = undefined;
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

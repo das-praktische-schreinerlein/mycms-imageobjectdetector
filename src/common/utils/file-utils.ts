@@ -58,15 +58,15 @@ export class FileUtils {
                     const iindex = index;
                     index = index + 1;
                     funcs.push(function () { return new Promise<string>((processorResolve, processorReject) => {
-                        commandExtender(media[destPath], destPath, processorResolve, processorReject, iindex, count);
+                        return commandExtender(media[destPath], destPath, processorResolve, processorReject, iindex, count);
                     });
                     });
                 }
 
-                Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
-                    resolve(media);
+                return Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
+                    return resolve(media);
                 }).catch(reason => {
-                    reject(reason);
+                    return reject(reason);
                 });
             });
         });

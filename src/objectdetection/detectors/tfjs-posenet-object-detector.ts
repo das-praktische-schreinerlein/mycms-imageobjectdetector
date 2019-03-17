@@ -46,7 +46,7 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            posenet.load(this.multiplier).then(model => {
+            return posenet.load(this.multiplier).then(model => {
                 this.detector = model;
 
                 return resolve(true);
@@ -68,8 +68,10 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 
+                input = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
+                input = undefined;
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

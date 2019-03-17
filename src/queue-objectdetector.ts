@@ -130,7 +130,7 @@ const server = rsmq.listQueuesAsync().then(queues => {
         }
 
         const srcPath = request.fileName;
-        const imageDetectors: AbstractObjectDetector[] = [];
+        let imageDetectors: AbstractObjectDetector[] = [];
         for (const detectorName of request.detectors) {
             if (detectorMap[detectorName]) {
                 imageDetectors.push(detectorMap[detectorName]);
@@ -149,14 +149,19 @@ const server = rsmq.listQueuesAsync().then(queues => {
                     detectedObjects[i].state = ObjectDetectionState.RUNNING_SUGGESTED;
                 }
 
-                const response: ObjectDetectionResponseType = {
+                let response: ObjectDetectionResponseType = {
                     request: request,
                     results: detectedObjects
                 };
 
                 responseWorker.send(JSON.stringify(response), err => {
+                    imageDetectors = undefined;
+                    detectedObjects = undefined;
+                    response = undefined;
+                    request = undefined;
                     if (err) {
                         console.error('ERROR - while sending response', err, msg);
+                        msg = undefined;
                         return next(new Error(err));
                     }
 
@@ -164,11 +169,18 @@ const server = rsmq.listQueuesAsync().then(queues => {
                     requestWorker.del(id);
                 });
             } else {
+                imageDetectors = undefined;
+                detectedObjects = undefined;
+                msg = undefined;
+                request = undefined;
                 console.warn('WARNING - got no result for', srcPath);
             }
 
             return next();
         }).catch(reason => {
+            imageDetectors = undefined;
+            request = undefined;
+            msg = undefined;
             console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
             next(new Error(reason));
         });
@@ -178,10 +190,13 @@ const server = rsmq.listQueuesAsync().then(queues => {
         errorWorker.send(msg.message, err => {
             if (err) {
                 console.error('ERROR - while sending error', err, msg.id);
+                msg = undefined;
                 return;
             }
 
-            return requestWorker.del(msg.id);
+            const res =  requestWorker.del(msg.id);
+            msg = undefined;
+            return res;
         });
     });
     requestWorker.on('exceeded', function(msg){

@@ -43,7 +43,7 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            cocoSsd.load(this.modelName,
+            return cocoSsd.load(this.modelName,
                 this.getModelBasePath() + 'model.json').then(model => {
                 this.detector = model;
 
@@ -57,7 +57,7 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
 
     detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            this.detector.detect(input).then(predictions => {
+            return this.detector.detect(input).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
@@ -65,9 +65,11 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 
+                input = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
+                input = undefined;
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });
         });
