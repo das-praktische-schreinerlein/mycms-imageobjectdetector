@@ -57,10 +57,11 @@ export class DetectorUtils {
             for (const detector of detectors) {
                 const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
                 if (cacheEntry) {
+                    if (cacheEntry.results && !detectedCachedObjects) {
+                        // result defined: prepare list
+                        detectedCachedObjects = [];
+                    }
                     for (let s = 0; s < cacheEntry.results.length; s++) {
-                        if (!detectedCachedObjects) {
-                            detectedCachedObjects = [];
-                        }
                         detectedCachedObjects.push(cacheEntry.results[s]);
                     }
                 } else {
@@ -116,10 +117,10 @@ export class DetectorUtils {
                     for (let i = 0; i < arrayOfDetectorResults.length; i++) {
                         const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
                         if (detectorResult) {
+                            if (!detectedObjects) {
+                                detectedObjects = []
+                            }
                             for (let s = 0; s < detectorResult.length; s++) {
-                                if (!detectedObjects) {
-                                    detectedObjects = []
-                                }
                                 detectedObjects.push(detectorResult[s]);
                             }
                         }
