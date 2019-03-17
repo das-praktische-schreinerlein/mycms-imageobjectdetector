@@ -51,13 +51,16 @@ export class DetectorUtils {
             }
 
             // use cached entries if for all detectors exists
-            const detectedCachedObjects = [];
+            let detectedCachedObjects = undefined;
             let alreadyCached = true;
             let expectedInputRequirements = {};
             for (const detector of detectors) {
                 const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
                 if (cacheEntry) {
                     for (let s = 0; s < cacheEntry.results.length; s++) {
+                        if (!detectedCachedObjects) {
+                            detectedCachedObjects = [];
+                        }
                         detectedCachedObjects.push(cacheEntry.results[s]);
                     }
                 } else {
@@ -109,11 +112,14 @@ export class DetectorUtils {
                 }
 
                 Promise_serial(funcs, {parallelize: 1}).then(arrayOfDetectorResults => {
-                    const detectedObjects: ObjectDetectionDetectedObject[] = [];
+                    let detectedObjects: ObjectDetectionDetectedObject[] = undefined;
                     for (let i = 0; i < arrayOfDetectorResults.length; i++) {
                         const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
                         if (detectorResult) {
                             for (let s = 0; s < detectorResult.length; s++) {
+                                if (!detectedObjects) {
+                                    detectedObjects = []
+                                }
                                 detectedObjects.push(detectorResult[s]);
                             }
                         }

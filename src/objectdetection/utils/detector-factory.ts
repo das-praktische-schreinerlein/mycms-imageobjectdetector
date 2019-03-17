@@ -40,6 +40,15 @@ export class DetectorFactory {
         return detectors;
     };
 
+    public static getDetectorMap(detectors: AbstractObjectDetector[]): {} {
+        const detectormap = {};
+        for (const detector of detectors) {
+            detectormap[detector.getDetectorId()] = detector;
+        }
+
+        return detectormap;
+    }
+
     public static getAvailableDetectorMessage(): string {
         return 'invalid detectors: use \'tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile\'\n' +
             '-- attention: tfjs_posenet is very slow\n' +

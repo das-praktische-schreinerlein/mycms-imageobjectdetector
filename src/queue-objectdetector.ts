@@ -9,7 +9,9 @@ global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
 require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
 
 import {
-    ObjectDetectionRequestType, ObjectDetectionResponseType
+    ObjectDetectionRequestType,
+    ObjectDetectionResponseType,
+    ObjectDetectionState
 } from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {AbstractDetectorResultCacheService} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
@@ -55,12 +57,16 @@ myLog('STARTING - queue detection with detectors: ' + DetectorUtils.getDetectorI
     ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
     ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
     ' breakOnError: ' + breakOnError);
+const detectorMap = DetectorFactory.getDetectorMap(detectors);
 
 const requestQueueName = 'mycms-objectdetector-request';
+const errorQueueName = 'mycms-objectdetector-error';
 const responseQueueName = 'mycms-objectdetector-response';
 const rsmqOptions = {host: '127.0.0.1', port: 6379, ns: 'rsmq'};
 const rsmq = new RedisSMQ( rsmqOptions );
-const rsmqWorker = new RSMQWorker(requestQueueName, rsmqOptions);
+const requestWorker = new RSMQWorker(requestQueueName, rsmqOptions);
+const errorWorker = new RSMQWorker(errorQueueName, rsmqOptions);
+const responseWorker = new RSMQWorker(responseQueueName, rsmqOptions);
 
 let existingQueues = [];
 myLog('check queues');
@@ -96,30 +102,51 @@ const server = rsmq.listQueuesAsync().then(queues => {
         myLog('queue exists:' + responseQueueName);
     }
 
+    if (existingQueues.indexOf(errorQueueName) >= 0) {
+        return new Promise<number>(resolve => {
+            return resolve(0);
+        });
+    }
+
+    return rsmq.createQueueAsync({qname: errorQueueName});
+}).then(value => {
+    if (value === 1) {
+        myLog('queue created:' + errorQueueName);
+    } else if (value === 0) {
+        myLog('queue exists:' + errorQueueName);
+    }
+
     return DetectorUtils.initDetectors(detectors);
 }).then(value => {
-    rsmqWorker.on( 'message', function(msg, next, id){
-        // process your message
-        console.log('Message id : ' + LogUtils.sanitizeLogMsg(id));
-        console.log(msg);
+    requestWorker.on( 'message', function(msg, next, id){
+        console.debug('RUNNING - processing message:', id, msg);
 
         let request: ObjectDetectionRequestType;
         try {
-            request = JSON.parse(msg.message);
+            request = JSON.parse(msg);
         } catch (error) {
-            console.warn('error while processing message', LogUtils.sanitizeLogMsg(msg))
+            console.warn('ERROR - error while parsing message', msg, error);
+            return next(new Error(error));
         }
 
         const srcPath = request.fileName;
-        // TODO get detector from request
         const imageDetectors: AbstractObjectDetector[] = [];
+        for (const detectorName of request.detectors) {
+            if (detectorMap[detectorName]) {
+                imageDetectors.push(detectorMap[detectorName]);
+            } else {
+                console.warn('ERROR - unknown detector:', detectorName, msg);
+                return next(new Error('unknown detector:' + detectorName));
+            }
+        }
 
-        console.log('RUNNING - detector on image: ' + LogUtils.sanitizeLogMsg(srcPath), request.detectors);
+        console.debug('RUNNING - detector on image: ', srcPath, request.detectors);
         DetectorUtils.detectFromImageUrl(imageDetectors, srcPath, detectorCacheService, true).then(detectedObjects => {
             if (detectedObjects) {
                 // map responsedata with requestdata
                 for (let i = 0; i < detectedObjects.length; i++) {
                     detectedObjects[i].fileName = request.fileName;
+                    detectedObjects[i].state = ObjectDetectionState.RUNNING_SUGGESTED;
                 }
 
                 const response: ObjectDetectionResponseType = {
@@ -127,38 +154,45 @@ const server = rsmq.listQueuesAsync().then(queues => {
                     results: detectedObjects
                 };
 
-                rsmq.sendMessage({
-                    delay: 1000,
-                    message: JSON.stringify(detectedObjects),
-                    qname: responseQueueName,
-                }, err => {
+                responseWorker.send(JSON.stringify(response), err => {
                     if (err) {
-                        console.error('ERROR while sending response', err, msg.id);
+                        console.error('ERROR - while sending response', err, msg);
+                        return next(new Error(err));
                     }
+
+                    console.debug('DONE - send response for message', id);
+                    requestWorker.del(id);
                 });
             } else {
-                console.warn('got no result for: ' + LogUtils.sanitizeLogMsg(srcPath));
+                console.warn('WARNING - got no result for', srcPath);
             }
 
-            rsmqWorker.del(msg.id);
-            next();
+            return next();
         }).catch(reason => {
             console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
-            next();
+            next(new Error(reason));
         });
     });
-    rsmqWorker.on('error', function(err, msg){
-        console.error('ERROR while reading request', err, msg.id);
+    requestWorker.on('error', function(err, msg){
+        console.error('ERROR - request', err, msg.id);
+        errorWorker.send(msg.message, err => {
+            if (err) {
+                console.error('ERROR - while sending error', err, msg.id);
+                return;
+            }
+
+            return requestWorker.del(msg.id);
+        });
     });
-    rsmqWorker.on('exceeded', function(msg){
-        console.warn('EXCEEDED request', msg.id);
+    requestWorker.on('exceeded', function(msg){
+        console.warn('EXCEEDED - request', msg.id);
     });
-    rsmqWorker.on('timeout', function(msg){
-        console.warn('TIMEOUT request', msg.id, msg.rc);
+    requestWorker.on('timeout', function(msg){
+        console.warn('TIMEOUT - request', msg.id, msg.rc);
     });
 
     myLog('start worker');
-    rsmqWorker.start();
+    requestWorker.start();
 });
 
 try {

@@ -12,7 +12,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
         super(readOnly, forceUpdate);
     }
 
-    public readImageCache(imagePath: string, returnEmtyIfNotExists: boolean): DetectorResultsCacheType {
+    public readImageCache(imagePath: string, returnNewIfNotExists: boolean): DetectorResultsCacheType {
         const cacheFileName = this.getCacheFileNameForImagePath(imagePath);
         let cache: DetectorResultsCacheType = undefined;
         try {
@@ -20,7 +20,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
         } catch (err) {
             console.warn('cant read cache:', err);
         }
-        if (!cache && returnEmtyIfNotExists) {
+        if (!cache && returnNewIfNotExists) {
             cache = {
                 detectors: {},
                 updateDate: new Date(),
