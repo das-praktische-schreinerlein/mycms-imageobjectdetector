@@ -142,6 +142,7 @@ const server = rsmq.listQueuesAsync().then(queues => {
         const srcPath = request.fileName;
         // TODO check srcPath against allowedBasePaths
 
+
         let imageDetectors: AbstractObjectDetector[] = [];
         for (const detectorName of request.detectors) {
             if (detectorMap[detectorName]) {

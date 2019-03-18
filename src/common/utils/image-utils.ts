@@ -12,7 +12,8 @@ export class ImageUtils {
             return ImageUtils.readExifForImage(buf).then(exif => {
                 buf = undefined;
                 if (!exif || !exif['exif']) {
-                    return reject('no exifdata found');
+                    console.error('cant read exif from buffer: no exifdata found');
+                    return resolve(this.readImageDataFromBuffer(buf));
                 }
 
                 return resolve({
@@ -21,8 +22,8 @@ export class ImageUtils {
                     height: exif['exif']['ExifImageHeight'] || exif['exif']['PixelYDimension'],
                 });
             }).catch(reason => {
-                buf = undefined;
-                return reject(reason);
+                console.error('cant read exif from buffer:', reason);
+                return resolve(this.readImageDataFromBuffer(buf));
             })
         });
     }
