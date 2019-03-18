@@ -155,13 +155,13 @@ const server = rsmq.listQueuesAsync().then(queues => {
                 };
 
                 responseWorker.send(JSON.stringify(response), err => {
-                    imageDetectors = undefined;
-                    detectedObjects = undefined;
-                    response = undefined;
-                    request = undefined;
+                    imageDetectors = DetectorUtils.disposeObj(imageDetectors);
+                    detectedObjects = DetectorUtils.disposeObj(detectedObjects);
+                    request = DetectorUtils.disposeObj(request);
+                    response = DetectorUtils.disposeObj(response);
                     if (err) {
                         console.error('ERROR - while sending response', err, msg);
-                        msg = undefined;
+                        msg = DetectorUtils.disposeObj(msg);
                         return next(new Error(err));
                     }
 
@@ -169,18 +169,18 @@ const server = rsmq.listQueuesAsync().then(queues => {
                     requestWorker.del(id);
                 });
             } else {
-                imageDetectors = undefined;
-                detectedObjects = undefined;
-                msg = undefined;
-                request = undefined;
+                imageDetectors = DetectorUtils.disposeObj(imageDetectors);
+                detectedObjects = DetectorUtils.disposeObj(detectedObjects);
+                request = DetectorUtils.disposeObj(request);
+                msg = DetectorUtils.disposeObj(msg);
                 console.warn('WARNING - got no result for', srcPath);
             }
 
             return next();
         }).catch(reason => {
-            imageDetectors = undefined;
-            request = undefined;
-            msg = undefined;
+            imageDetectors = DetectorUtils.disposeObj(imageDetectors);
+            request = DetectorUtils.disposeObj(request);
+            msg = DetectorUtils.disposeObj(msg);
             console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
             next(new Error(reason));
         });
@@ -190,12 +190,12 @@ const server = rsmq.listQueuesAsync().then(queues => {
         errorWorker.send(msg.message, err => {
             if (err) {
                 console.error('ERROR - while sending error', err, msg.id);
-                msg = undefined;
+                msg= DetectorUtils.disposeObj(msg);
                 return;
             }
 
             const res =  requestWorker.del(msg.id);
-            msg = undefined;
+            msg= DetectorUtils.disposeObj(msg);
             return res;
         });
     });

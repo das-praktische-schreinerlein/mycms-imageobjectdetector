@@ -130,21 +130,22 @@ export class DetectorUtils {
                         detectorResultCacheService.writeImageCache(imageUrl, detectorResultCache);
                     }
 
-                    detectedCachedObjects = undefined;
-                    detectorResultCache = undefined;
+                    detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
+                    detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
                     input = undefined;
 
                     return resolve(detectedObjects);
                 }).catch(reason => {
-                    detectedCachedObjects = undefined;
-                    detectorResultCache = undefined;
-                    input = undefined;
+                    input = DetectorUtils.disposeObj(input);
+                    detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
+                    detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
+                    input = DetectorUtils.disposeObj(input);
 
                     return reject(reason);
                 });
             }).catch(reason => {
-                detectedCachedObjects = undefined;
-                detectorResultCache = undefined;
+                detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
+                detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
                 return breakOnError ? reject(reason) : resolve(undefined);
             })
         });
@@ -278,5 +279,13 @@ export class DetectorUtils {
         }
 
         return ids;
+    }
+
+    public static disposeObj(object: any): any {
+        if (object && object['dispose']) {
+            return object['dispose']();
+        }
+
+        return undefined;
     }
 }

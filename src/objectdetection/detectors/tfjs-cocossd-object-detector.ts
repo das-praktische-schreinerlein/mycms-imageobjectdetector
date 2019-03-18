@@ -6,6 +6,7 @@ import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-obje
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
+import {DetectorUtils} from "../utils/detector-utils";
 
 
 export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
@@ -64,12 +65,12 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
                         DetectorResultUtils.convertDetectedObjectToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
+                input = DetectorUtils.disposeObj(input);
 
-                input = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
-                input = undefined;
+                input = DetectorUtils.disposeObj(input);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });
         });

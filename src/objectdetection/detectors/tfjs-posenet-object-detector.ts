@@ -6,6 +6,7 @@ import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-obje
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
+import {DetectorUtils} from "../utils/detector-utils";
 
 
 export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
@@ -68,10 +69,10 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 
-                input = undefined;
+                input = DetectorUtils.disposeObj(input);
                 return resolve(detectedObjects);
             }).catch(error => {
-                input = undefined;
+                input = DetectorUtils.disposeObj(input);
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

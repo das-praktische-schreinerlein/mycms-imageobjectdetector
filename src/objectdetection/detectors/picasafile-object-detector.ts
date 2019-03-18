@@ -5,6 +5,7 @@ import {FileUtils} from '../../common/utils/file-utils';
 import * as fs from 'fs';
 import {TensorUtils} from '../utils/tensor-utils';
 import {DetectorResultUtils, PicasaObjectDetectionResult} from '../utils/detectorresult-utils';
+import {DetectorUtils} from "../utils/detector-utils";
 
 export class PicasaFileObjectDetector extends AbstractObjectDetector {
     constructor () {
@@ -47,7 +48,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                 picasaContent = fs.readFileSync(picasaFile, {encoding: 'UTF-8'});
             } catch (err) {
                 // picasa not exists yet
-                input = undefined;
+                input = DetectorUtils.disposeObj(input);
                 return resolve(undefined);
             }
 
@@ -59,8 +60,8 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
             let startIndexImageFileKey = picasaContent.indexOf(imageFileKey);
             if (startIndexImageFileKey < 0) {
                 // ImgArea not found in Picasafile
-                input = undefined;
-                return resolve(undefined);
+                input = DetectorUtils.disposeObj(input);
+                return resolve([]);
             }
 
             // till next ImgArea or end of file
@@ -147,7 +148,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                 }
             }
 
-            input = undefined;
+            input = DetectorUtils.disposeObj(input);
             return resolve(detectedObjects);
         });
     }
