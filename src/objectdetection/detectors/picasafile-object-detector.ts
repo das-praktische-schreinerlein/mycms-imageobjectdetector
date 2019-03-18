@@ -5,7 +5,7 @@ import {FileUtils} from '../../common/utils/file-utils';
 import * as fs from 'fs';
 import {TensorUtils} from '../utils/tensor-utils';
 import {DetectorResultUtils, PicasaObjectDetectionResult} from '../utils/detectorresult-utils';
-import {DetectorUtils} from "../utils/detector-utils";
+import {DetectorUtils} from '../utils/detector-utils';
 
 export class PicasaFileObjectDetector extends AbstractObjectDetector {
     constructor () {

@@ -22,6 +22,8 @@ import {DetectorResultDirectoryCacheService} from './objectdetection/utils/detec
 import * as minimist from 'minimist';
 import * as RedisSMQ from 'rsmq';
 import * as RSMQWorker from 'rsmq-worker';
+import {BeanUtils} from '@dps/mycms-commons/dist/commons/utils/bean.utils';
+import * as fs from 'fs';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -40,6 +42,12 @@ const breakOnError = argv['breakOnError'] ? true : false;
 const directoryCacheReadOnly = argv['directoryCacheReadOnly'] ? true : false;
 const forceUpdateDirectoryCache = argv['forceUpdateDirectoryCache'] ? true : false;
 const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
+const filePathConfigJson = argv['c'] || argv['config'] || 'config/queue.json';
+const backendConfig = JSON.parse(fs.readFileSync(filePathConfigJson, {encoding: 'utf8'}));
+const queueConfig = BeanUtils.getValue(backendConfig, 'redisQueue');
+if (queueConfig === undefined) {
+    throw new Error('config for redisQueue not exists');
+}
 
 // configure detectors
 let detectors: AbstractObjectDetector[] = [];
@@ -59,14 +67,16 @@ myLog('STARTING - queue detection with detectors: ' + DetectorUtils.getDetectorI
     ' breakOnError: ' + breakOnError);
 const detectorMap = DetectorFactory.getDetectorMap(detectors);
 
-const requestQueueName = 'mycms-objectdetector-request';
-const errorQueueName = 'mycms-objectdetector-error';
-const responseQueueName = 'mycms-objectdetector-response';
-const rsmqOptions = {host: '127.0.0.1', port: 6379, ns: 'rsmq'};
+const requestQueueName = queueConfig['requestQueue'];
+const errorQueueName = queueConfig['errorQueue'];
+const responseQueueName = queueConfig['responseQueue'];
+const rsmqOptions = {host: queueConfig['host'], port: queueConfig['port'], ns: queueConfig['ns'],
+    options: { password: queueConfig['pass'], db: queueConfig['db']}};
 const rsmq = new RedisSMQ( rsmqOptions );
 const requestWorker = new RSMQWorker(requestQueueName, rsmqOptions);
 const errorWorker = new RSMQWorker(errorQueueName, rsmqOptions);
 const responseWorker = new RSMQWorker(responseQueueName, rsmqOptions);
+const allowedBasePath = BeanUtils.getValue(backendConfig, 'allowedBasePath') || [];
 
 let existingQueues = [];
 myLog('check queues');
@@ -130,6 +140,8 @@ const server = rsmq.listQueuesAsync().then(queues => {
         }
 
         const srcPath = request.fileName;
+        // TODO check srcPath against allowedBasePaths
+
         let imageDetectors: AbstractObjectDetector[] = [];
         for (const detectorName of request.detectors) {
             if (detectorMap[detectorName]) {

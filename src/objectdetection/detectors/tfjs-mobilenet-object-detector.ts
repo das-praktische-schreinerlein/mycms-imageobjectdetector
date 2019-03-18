@@ -6,7 +6,7 @@ import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-obje
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
-import {DetectorUtils} from "../utils/detector-utils";
+import {DetectorUtils} from '../utils/detector-utils';
 
 
 export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {

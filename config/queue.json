@@ -1,0 +1,14 @@
+{
+    "redisQueue": {
+        "host": "localhost",
+        "port": "6379",
+        "pass": "blablub",
+        "db": "",
+        "ns": "rsmq",
+        "requestQueue": "mycms-objectdetector-request",
+        "responseQueue": "mycms-objectdetector-response",
+        "errorQueue": "mycms-objectdetector-error"
+    },
+    "allowedBasePath": []
+}
+
