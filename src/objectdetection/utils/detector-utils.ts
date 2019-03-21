@@ -132,7 +132,7 @@ export class DetectorUtils {
 
                     detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
                     detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
-                    input = undefined;
+                    input = DetectorUtils.disposeObj(input);
 
                     return resolve(detectedObjects);
                 }).catch(reason => {

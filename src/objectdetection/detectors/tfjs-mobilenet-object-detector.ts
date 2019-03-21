@@ -66,10 +66,10 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
 
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

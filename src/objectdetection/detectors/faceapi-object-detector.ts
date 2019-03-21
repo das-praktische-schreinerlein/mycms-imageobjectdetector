@@ -57,9 +57,8 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
 
     detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            let tensor: Tensor3D =  input['width']
-                ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS)
-                : <Tensor3D>input;
+            let localTensor: Tensor3D = input['width'] ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS) : undefined;
+            let tensor: Tensor3D = input['width'] ? localTensor : <Tensor3D>input;
             return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
@@ -68,12 +67,14 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
                             this, predictions[i], imageUrl));
                 }
 
-                input = DetectorUtils.disposeObj(input);
-                tensor = DetectorUtils.disposeObj(tensor);
+                localTensor = DetectorUtils.disposeObj(localTensor);
+                input = undefined;
+                tensor = undefined;
                 return resolve(detectedObjects);
             }).catch(error => {
-                input = DetectorUtils.disposeObj(input);
-                tensor = DetectorUtils.disposeObj(tensor);
+                localTensor = DetectorUtils.disposeObj(localTensor);
+                input = undefined;
+                tensor = undefined;
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });

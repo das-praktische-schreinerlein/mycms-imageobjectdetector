@@ -1,10 +1,31 @@
 import * as exifReader from 'exif';
 import * as jpeg from 'jpeg-js';
+import {Image, createCanvas} from 'canvas';
 
 export class ImageUtils {
 
-    public static readImageDataFromBuffer(buf): ImageData {
-        return jpeg.decode(buf, true);
+    public static readImageDataFromBuffer(buf):ImageData  {
+        return this.readImageDataFromBufferWithCanvas(buf);
+    }
+
+    public static readImageDataFromBufferWithCanvas(buf):ImageData  {
+        const start = new Date();
+        const img = new Image();
+        img.onerror = err => { throw err };
+        img.src = buf;
+        const canvas = createCanvas(img.width, img.height);
+        canvas.getContext('2d').drawImage(img, 0, 0);
+
+        const ret = canvas.getContext('2d').getImageData(0, 0, img.width, img.height);
+        // console.debug('duration decoding image via canvas:', new Date().getTime() - start.getTime());
+        return ret;
+    }
+
+    public static readImageDataFromBufferWithJpeg(buf): ImageData {
+        const start = new Date();
+        const ret = jpeg.decode(buf, true);
+        // console.debug('duration decoding image via jpeg:', new Date().getTime() - start.getTime());
+        return ret;
     }
 
     public static readImageMetaDataFromBuffer(buf): Promise<ImageData> {

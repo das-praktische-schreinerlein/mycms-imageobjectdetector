@@ -93,10 +93,12 @@ export class TensorUtils {
     }
 
     public static imageToTensor3D(image: ImageData, numChannels: number): Tensor3D {
+        const start = new Date();
         const values = ImageUtils.imageToInt32Array(image, numChannels);
         const outShape: [number, number, number] = [image.height, image.width, numChannels];
-
-        return tf.tensor3d(values, outShape, 'int32');
+        const ret = tf.tensor3d(values, outShape, 'int32');
+        // console.debug('duration creating tensor3d:', new Date().getTime() - start.getTime());
+        return ret;
     }
 
     public static getImageDimensionsFromTensor3D(tensor: Tensor3D): number[] {

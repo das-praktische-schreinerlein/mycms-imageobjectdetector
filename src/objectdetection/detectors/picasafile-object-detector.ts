@@ -48,7 +48,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                 picasaContent = fs.readFileSync(picasaFile, {encoding: 'UTF-8'});
             } catch (err) {
                 // picasa not exists yet
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
                 return resolve(undefined);
             }
 
@@ -60,7 +60,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
             let startIndexImageFileKey = picasaContent.indexOf(imageFileKey);
             if (startIndexImageFileKey < 0) {
                 // ImgArea not found in Picasafile
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
                 return resolve([]);
             }
 
@@ -148,7 +148,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                 }
             }
 
-            input = DetectorUtils.disposeObj(input);
+            input = undefined;
             return resolve(detectedObjects);
         });
     }

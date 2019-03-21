@@ -65,12 +65,12 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
                         DetectorResultUtils.convertDetectedObjectToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
                 }
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
 
                 return resolve(detectedObjects);
             }).catch(error => {
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
-                input = DetectorUtils.disposeObj(input);
+                input = undefined;
                 return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });
         });

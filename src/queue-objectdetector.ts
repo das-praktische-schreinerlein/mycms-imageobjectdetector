@@ -154,7 +154,9 @@ const server = rsmq.listQueuesAsync().then(queues => {
         }
 
         console.debug('RUNNING - detector on image: ', srcPath, request.detectors);
+        const start = new Date();
         DetectorUtils.detectFromImageUrl(imageDetectors, srcPath, detectorCacheService, true).then(detectedObjects => {
+            console.debug('DONE - detectors on image in ' + (new Date().getTime() - start.getTime()) + 'ms: ', srcPath, request.detectors);
             if (detectedObjects) {
                 // map responsedata with requestdata
                 for (let i = 0; i < detectedObjects.length; i++) {

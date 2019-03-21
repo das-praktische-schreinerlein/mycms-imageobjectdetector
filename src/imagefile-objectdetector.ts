@@ -6,8 +6,6 @@ global['XMLHttpRequest'] = require('xmlhttprequest').XMLHttpRequest;
 const rootDir = 'file://' + __dirname + '/../';
 global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
 
-require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
-
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorFactory} from './objectdetection/utils/detector-factory';
 import {AbstractObjectDetector} from './objectdetection/abstract-object-detector';
@@ -18,6 +16,20 @@ import {AbstractDetectorResultCacheService} from '@dps/mycms-commons/dist/common
 import * as minimist from 'minimist';
 
 const argv = minimist(process.argv.slice(2));
+if (!argv['mode'] || argv['mode'] === 'node') {
+    try {
+        require('@tensorflow/tfjs-node') ? console.log('using tfjs-node') : undefined;
+    } catch (err) {
+        console.error('cant load tfjs-node', err);
+    }
+}
+if (!argv['mode'] || argv['mode'] === 'gpu') {
+    try {
+        require('@tensorflow/tfjs-node-gpu') ? console.log('using tfjs-node-gpu') : undefined;
+    } catch (err) {
+        console.error('cant load tfjs-node-gpu', err);
+    }
+}
 
 // disable debug-logging
 const debug = argv['debug'] || false;
@@ -68,6 +80,7 @@ DetectorUtils.initDetectors(detectors).then(value => {
     FileUtils.doActionOnFilesFromMediaDir(sourceDir, destDir, '.tmp', mediaTypes,
         function (srcPath, destPath, processorResolve, processorReject, index, count) {
             console.log('RUNNING - detectors on image ' + index + '/' + count + ': ' + LogUtils.sanitizeLogMsg(srcPath));
+            const start = new Date();
             DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
@@ -80,6 +93,8 @@ DetectorUtils.initDetectors(detectors).then(value => {
                             ' dim:[', [detectedObjects[i].imgWidth, detectedObjects[i].imgHeight].join(','), ']');
                     }
                 }
+
+                console.debug('DONE - detectors on image ' + index + '/' + count + ' in ' + (new Date().getTime() - start.getTime()) + 'ms - ' + LogUtils.sanitizeLogMsg(srcPath));
                 return processorResolve('OK');
             }).catch(reason => {
                 console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
