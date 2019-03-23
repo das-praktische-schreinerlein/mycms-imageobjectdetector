@@ -21,15 +21,6 @@ export class TensorNodeUtils {
         const minimist = require('minimist');
         const argv = minimist(process.argv.slice(2));
         global['TFJS_LOADER'] = function () {
-            if (!argv['mode'] || argv['mode'] === 'gpu') {
-                try {
-                    console.log('using tfjs-node-gpu');
-                    return require('@tensorflow/tfjs-node-gpu');
-                } catch (err) {
-                    console.error('cant load tfjs-node-gpu, using tfjs-node', err);
-                    return require('@tensorflow/tfjs-node');
-                }
-            }
             if (!argv['mode'] || argv['mode'] === 'node') {
                 try {
                     console.log('using tfjs-node');
@@ -37,6 +28,15 @@ export class TensorNodeUtils {
                 } catch (err) {
                     console.error('cant load tfjs-node, using tfjs', err);
                     return require('@tensorflow/tfjs');
+                }
+            }
+            if (!argv['mode'] || argv['mode'] === 'gpu') {
+                try {
+                    console.log('using tfjs-node-gpu');
+                    return require('@tensorflow/tfjs-node-gpu');
+                } catch (err) {
+                    console.error('cant load tfjs-node-gpu, using tfjs-node', err);
+                    return require('@tensorflow/tfjs-node');
                 }
             }
 
