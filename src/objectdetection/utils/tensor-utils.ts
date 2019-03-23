@@ -1,7 +1,7 @@
-import * as tf from '@tensorflow/tfjs-node';
-import {Tensor3D} from '@tensorflow/tfjs-node';
+import {Tensor3D} from '@tensorflow/tfjs';
 import * as fs from 'fs';
 import {ImageUtils} from '../../common/utils/image-utils';
+const tf = global['TFJS_LOADER'] != undefined ? global['TFJS_LOADER']() : require('@tensorflow/tfjs');
 
 export class TensorUtils {
     public static NUMBER_OF_CHANNELS = 3;

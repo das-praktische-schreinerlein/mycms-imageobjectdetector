@@ -5,7 +5,7 @@ patch-package
  "use strict";
  Object.defineProperty(exports, "__esModule", { value: true });
 -var tfjs_1 = require("@tensorflow/tfjs");
-+var tfjs_1 = require("@tensorflow/tfjs-node");
++var tfjs_1 = typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs");
  var MANIFEST_FILE = 'manifest.json';
  var CheckpointLoader = (function () {
      function CheckpointLoader(urlPath) {
@@ -51,7 +51,7 @@ patch-package
  (function (global, factory) {
 -  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@tensorflow/tfjs')) :
 -  typeof define === 'function' && define.amd ? define(['exports', '@tensorflow/tfjs'], factory) :
-+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@tensorflow/tfjs-node')) :
++  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs")) :
 +  typeof define === 'function' && define.amd ? define(['exports', '@tensorflow/tfjs-node'], factory) :
    (factory((global.posenet = {}),global.tf));
  }(this, (function (exports,tf) { 'use strict';
@@ -63,7 +63,7 @@ patch-package
  var _this = this;
  Object.defineProperty(exports, "__esModule", { value: true });
 -var tf = require("@tensorflow/tfjs");
-+var tf = require("@tensorflow/tfjs-node");
++var tf = typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs");
  var checkpoint_loader_1 = require("./checkpoint_loader");
  var checkpoints_1 = require("./checkpoints");
  var mobilenet_1 = require("./mobilenet");
@@ -73,7 +73,7 @@ patch-package
  "use strict";
  Object.defineProperty(exports, "__esModule", { value: true });
 -var tf = require("@tensorflow/tfjs");
-+var tf = require("@tensorflow/tfjs-node");
++var tf = typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs");
  function mod(a, b) {
      return tf.tidy(function () {
          var floored = a.div(tf.scalar(b, 'int32'));
@@ -83,7 +83,7 @@ patch-package
  "use strict";
  Object.defineProperty(exports, "__esModule", { value: true });
 -var tf = require("@tensorflow/tfjs");
-+var tf = require("@tensorflow/tfjs-node");
++var tf = typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs");
  var keypoints_1 = require("../keypoints");
  function getPointsConfidence(heatmapScores, heatMapCoords) {
      var numKeypoints = heatMapCoords.shape[0];
@@ -94,7 +94,7 @@ patch-package
  };
  Object.defineProperty(exports, "__esModule", { value: true });
 -var tf = require("@tensorflow/tfjs");
-+var tf = require("@tensorflow/tfjs-node");
++var tf = typeof TFJS_LOADER !== 'undefined' ? TFJS_LOADER() : require("@tensorflow/tfjs");
  var keypoints_1 = require("./keypoints");
  function eitherPointDoesntMeetConfidence(a, b, minConfidence) {
      return (a < minConfidence || b < minConfidence);

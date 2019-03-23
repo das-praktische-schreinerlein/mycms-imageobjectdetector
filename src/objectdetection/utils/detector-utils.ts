@@ -43,7 +43,8 @@ export class DetectorUtils {
 
     public static detectFromImageUrl(detectors: AbstractObjectDetector[], imageUrl: string,
                                      detectorResultCacheService: AbstractDetectorResultCacheService,
-                                     breakOnError: boolean): Promise<ObjectDetectionDetectedObject[]> {
+                                     breakOnError: boolean,
+                                     parallelize: number): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             let detectorResultCache: DetectorResultsCacheType = undefined;
             if (detectorResultCacheService) {
@@ -89,13 +90,15 @@ export class DetectorUtils {
                 let cacheUpdated = false;
                 const funcs = [];
                 for (const detector of detectors) {
-                    funcs.push(function () {
+                    funcs.push(async function () {
                         return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
                             const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl): undefined;
                             if (cacheEntry) {
                                 return processorResolve(cacheEntry.results)
                             }
 
+                            const start = new Date();
+                            console.debug('START detector in ' + (new Date().getTime()) + 'ms - ', detector.getDetectorId());
                             return detector.detectFromCommonInput(input, imageUrl)
                                 .then(detectedObjects => {
                                     cacheUpdated = true;
@@ -103,6 +106,7 @@ export class DetectorUtils {
                                         detectorResultCacheService ? detectorResultCacheService.setImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl, detectedObjects) : undefined;
                                     }
 
+                                    console.debug('DONE detector in ' + (new Date().getTime() - start.getTime()) + 'ms - ', detector.getDetectorId());
                                     return processorResolve(detectedObjects);
                                 })
                                 .catch(reason => {
@@ -112,7 +116,7 @@ export class DetectorUtils {
                     });
                 }
 
-                return Promise_serial(funcs, {parallelize: 1}).then(arrayOfDetectorResults => {
+                return Promise_serial(funcs, {parallelize: parallelize}).then(arrayOfDetectorResults => {
                     let detectedObjects: ObjectDetectionDetectedObject[] = undefined;
                     for (let i = 0; i < arrayOfDetectorResults.length; i++) {
                         const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];

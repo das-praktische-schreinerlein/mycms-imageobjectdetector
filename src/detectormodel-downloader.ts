@@ -1,6 +1,7 @@
-// set global baseurl
+// configure first !!!!
+import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
 const rootDir = 'file://' + __dirname + '/../';
-global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
+TensorNodeUtils.initEnvironment(rootDir);
 
 import * as Promise_serial from 'promise-serial';
 import {AbstractObjectDetector} from './objectdetection/abstract-object-detector';
@@ -14,9 +15,11 @@ const argv = minimist(process.argv.slice(2));
 const debug = argv['debug'] || false;
 const myLog: Function = console.log;
 if (!debug) {
+    console.log = function() {};
+}
+if (!debug || debug === true || parseInt(debug, 10) < 1) {
     console.trace = function() {};
     console.debug = function() {};
-    console.log = function() {};
 }
 
 // configure detectors

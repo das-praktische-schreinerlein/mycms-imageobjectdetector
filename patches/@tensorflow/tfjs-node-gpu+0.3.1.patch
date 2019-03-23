@@ -1,0 +1,7 @@
+patch-package
+new file mode 100644
+--- /dev/null
++++ b/node_modules/@tensorflow/tfjs-node-gpu/dist/tfjs_binding.d.ts
+@@ -0,0 +1 @@
++export type TFEOpAttr = any; export type TFJSBinding = any;
+\ No newline at end of file

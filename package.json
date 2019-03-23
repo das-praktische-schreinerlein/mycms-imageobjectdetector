@@ -24,6 +24,7 @@
         },
         "run-imagefile-detector": "node dist/imagefile-objectdetector.js",
         "run-common-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,faceapi,picasafile --useDirectoryCache",
+        "run-common-imagefile-detector-without-cache": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,faceapi,picasafile",
         "run-all-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile --useDirectoryCache",
         "run-all-queue-detector": "node dist/queue-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile --useDirectoryCache --debug",
         "test": "echo 'no tests'"
@@ -36,6 +37,7 @@
         "@tensorflow-models/posenet": "1.0.0",
         "@tensorflow/tfjs": "1.0.1",
         "@tensorflow/tfjs-node": "0.3.1",
+        "@tensorflow/tfjs-node-gpu": "0.3.1",
         "canvas": "~2.4.1",
         "domino": "~1.0.30",
         "download": "~7.1.0",

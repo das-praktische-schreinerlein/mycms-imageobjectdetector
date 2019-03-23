@@ -1,12 +1,7 @@
-// polyfill
-global['fetch'] = require('node-fetch');
-global['fetchFunc'] = require('node-fetch');
-global['XMLHttpRequest'] = require('xmlhttprequest').XMLHttpRequest;
-// set global baseurl
+// configure first !!!!
+import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
 const rootDir = 'file://' + __dirname + '/../';
-global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
-
-require('@tensorflow/tfjs-node') ? console.log('require tfjs-node') : undefined;
+TensorNodeUtils.initEnvironment(rootDir);
 
 import {
     ObjectDetectionRequestType,
@@ -31,9 +26,11 @@ const argv = minimist(process.argv.slice(2));
 const debug = argv['debug'] || false;
 const myLog: Function = console.log;
 if (!debug) {
+    console.log = function() {};
+}
+if (!debug || debug === true || parseInt(debug, 10) < 1) {
     console.trace = function() {};
     console.debug = function() {};
-    console.log = function() {};
 }
 
 // check cache
@@ -41,6 +38,7 @@ const useDirectoryCache = argv['useDirectoryCache'] ? true : false;
 const breakOnError = argv['breakOnError'] ? true : false;
 const directoryCacheReadOnly = argv['directoryCacheReadOnly'] ? true : false;
 const forceUpdateDirectoryCache = argv['forceUpdateDirectoryCache'] ? true : false;
+const parallelizeDetector: number = argv['parallelizeDetector'] ? parseInt(argv['parallelizeDetector'], 10) : 1;
 const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
 const filePathConfigJson = argv['c'] || argv['config'] || 'config/queue.json';
 const backendConfig = JSON.parse(fs.readFileSync(filePathConfigJson, {encoding: 'utf8'}));
@@ -61,6 +59,7 @@ if (detectors.length < 1) {
     process.exit(-1);
 }
 myLog('STARTING - queue detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
+    ' parallelizeDetector: ' + parallelizeDetector +
     ' useDirectoryCache: ' + useDirectoryCache +
     ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
     ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
@@ -155,7 +154,7 @@ const server = rsmq.listQueuesAsync().then(queues => {
 
         console.debug('RUNNING - detector on image: ', srcPath, request.detectors);
         const start = new Date();
-        DetectorUtils.detectFromImageUrl(imageDetectors, srcPath, detectorCacheService, true).then(detectedObjects => {
+        DetectorUtils.detectFromImageUrl(imageDetectors, srcPath, detectorCacheService, true, parallelizeDetector).then(detectedObjects => {
             console.debug('DONE - detectors on image in ' + (new Date().getTime() - start.getTime()) + 'ms: ', srcPath, request.detectors);
             if (detectedObjects) {
                 // map responsedata with requestdata

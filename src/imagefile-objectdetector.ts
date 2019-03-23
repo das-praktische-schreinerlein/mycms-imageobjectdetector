@@ -1,10 +1,7 @@
-// polyfill
-global['fetch'] = require('node-fetch');
-global['fetchFunc'] = require('node-fetch');
-global['XMLHttpRequest'] = require('xmlhttprequest').XMLHttpRequest;
-// set global baseurl
+// configure first !!!!
+import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
 const rootDir = 'file://' + __dirname + '/../';
-global['POSENET_BASE_URL'] = rootDir + 'assets/models/posenet/';
+TensorNodeUtils.initEnvironment(rootDir);
 
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorFactory} from './objectdetection/utils/detector-factory';
@@ -16,28 +13,16 @@ import {AbstractDetectorResultCacheService} from '@dps/mycms-commons/dist/common
 import * as minimist from 'minimist';
 
 const argv = minimist(process.argv.slice(2));
-if (!argv['mode'] || argv['mode'] === 'node') {
-    try {
-        require('@tensorflow/tfjs-node') ? console.log('using tfjs-node') : undefined;
-    } catch (err) {
-        console.error('cant load tfjs-node', err);
-    }
-}
-if (!argv['mode'] || argv['mode'] === 'gpu') {
-    try {
-        require('@tensorflow/tfjs-node-gpu') ? console.log('using tfjs-node-gpu') : undefined;
-    } catch (err) {
-        console.error('cant load tfjs-node-gpu', err);
-    }
-}
 
 // disable debug-logging
 const debug = argv['debug'] || false;
 const myLog: Function = console.log;
 if (!debug) {
+    console.log = function() {};
+}
+if (!debug || debug === true || parseInt(debug, 10) < 1) {
     console.trace = function() {};
     console.debug = function() {};
-    console.log = function() {};
 }
 
 // check source
@@ -54,6 +39,7 @@ const breakOnError = argv['breakOnError'] ? true : false;
 const directoryCacheReadOnly = argv['directoryCacheReadOnly'] ? true : false;
 const forceUpdateDirectoryCache = argv['forceUpdateDirectoryCache'] ? true : false;
 const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
+const parallelizeDetector: number = argv['parallelizeDetector'] ? parseInt(argv['parallelizeDetector'], 10) : 1;
 
 // configure detectors
 let detectors: AbstractObjectDetector[] = [];
@@ -67,6 +53,7 @@ if (detectors.length < 1) {
     process.exit(-1);
 }
 myLog('STARTING - detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
+    ' parallelizeDetector: ' + parallelizeDetector +
     ' useDirectoryCache: ' + useDirectoryCache +
     ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
     ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
@@ -81,7 +68,7 @@ DetectorUtils.initDetectors(detectors).then(value => {
         function (srcPath, destPath, processorResolve, processorReject, index, count) {
             console.log('RUNNING - detectors on image ' + index + '/' + count + ': ' + LogUtils.sanitizeLogMsg(srcPath));
             const start = new Date();
-            DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true).then(detectedObjects => {
+            DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true, parallelizeDetector).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
                         console.log('OK found: ' + LogUtils.sanitizeLogMsg(srcPath) +
