@@ -1,6 +1,7 @@
 import {Tensor3D} from '@tensorflow/tfjs';
-import * as fs from 'fs';
 import {ImageUtils} from '../../common/utils/image-utils';
+import {FileUtils} from '../../common/utils/file-utils';
+
 const tf = global['TFJS_LOADER'] != undefined ? global['TFJS_LOADER']() : require('@tensorflow/tfjs');
 
 export class TensorUtils {
@@ -10,7 +11,7 @@ export class TensorUtils {
         let buffer;
         return new Promise<ImageData>((resolve, reject) => {
             try {
-                buffer = fs.readFileSync(imageFile);
+                buffer = FileUtils.readConcreteFileSync(imageFile);
                 const imageData = ImageUtils.readImageDataFromBuffer(buffer);
 
                 buffer = undefined;
@@ -42,7 +43,7 @@ export class TensorUtils {
     }
 
     public static readImageMetaDataFromFile(imageFile): Promise<ImageData> {
-        const buffer = fs.readFileSync(imageFile);
+        const buffer = FileUtils.readConcreteFileSync(imageFile);
         return ImageUtils.readImageMetaDataFromBuffer(buffer);
     }
 

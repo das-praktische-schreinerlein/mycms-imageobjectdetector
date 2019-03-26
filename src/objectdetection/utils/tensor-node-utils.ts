@@ -41,7 +41,7 @@ export class TensorNodeUtils {
             }
 
             const tf = require('@tensorflow/tfjs');
-            const fileSystem = require("@tensorflow/tfjs-node/dist/io/file_system");
+            const fileSystem = require('@tensorflow/tfjs-node/dist/io/file_system');
             if (tf.io.getLoadHandlers('file://').length === 0) {
                 tf.io.registerLoadRouter(fileSystem.nodeFileSystemRouter);
             }

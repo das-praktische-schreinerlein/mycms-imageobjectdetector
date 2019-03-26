@@ -98,5 +98,5 @@ npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --d
 ## run detector as queued-service
 - start it with same options as imagefile-detector
 ```
-npm run run-all-queue-detector --useDirectoryCache --mode=gpu --parallelizeDetector 10 --debug 1
+npm run run-all-queue-detector -- --useDirectoryCache --mode=gpu --parallelizeDetector 10 --debug 1
 ```

@@ -9,6 +9,6 @@
         "responseQueue": "mycms-objectdetector-response",
         "errorQueue": "mycms-objectdetector-error"
     },
-    "allowedBasePath": []
+    "allowedBasePath": ["D:\\Bilder\\mediadb\\pics_full\\"]
 }
 

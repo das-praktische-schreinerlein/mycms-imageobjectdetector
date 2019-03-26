@@ -1,5 +1,5 @@
 // configure first !!!!
-import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
+import {TensorNodeUtils} from './objectdetection/utils/tensor-node-utils';
 const rootDir = 'file://' + __dirname + '/../';
 TensorNodeUtils.initEnvironment(rootDir);
 
@@ -18,7 +18,7 @@ import * as minimist from 'minimist';
 import * as RedisSMQ from 'rsmq';
 import * as RSMQWorker from 'rsmq-worker';
 import {BeanUtils} from '@dps/mycms-commons/dist/commons/utils/bean.utils';
-import * as fs from 'fs';
+import {FileUtils} from './common/utils/file-utils';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -41,7 +41,7 @@ const forceUpdateDirectoryCache = argv['forceUpdateDirectoryCache'] ? true : fal
 const parallelizeDetector: number = argv['parallelizeDetector'] ? parseInt(argv['parallelizeDetector'], 10) : 1;
 const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
 const filePathConfigJson = argv['c'] || argv['config'] || 'config/queue.json';
-const backendConfig = JSON.parse(fs.readFileSync(filePathConfigJson, {encoding: 'utf8'}));
+const backendConfig = JSON.parse(FileUtils.readConcreteFileSync(filePathConfigJson, {encoding: 'utf8'}));
 const queueConfig = BeanUtils.getValue(backendConfig, 'redisQueue');
 if (queueConfig === undefined) {
     throw new Error('config for redisQueue not exists');
@@ -58,12 +58,6 @@ if (detectors.length < 1) {
     console.error(DetectorFactory.getAvailableDetectorMessage(), LogUtils.sanitizeLogMsg(argv));
     process.exit(-1);
 }
-myLog('STARTING - queue detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
-    ' parallelizeDetector: ' + parallelizeDetector +
-    ' useDirectoryCache: ' + useDirectoryCache +
-    ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
-    ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
-    ' breakOnError: ' + breakOnError);
 const detectorMap = DetectorFactory.getDetectorMap(detectors);
 
 const requestQueueName = queueConfig['requestQueue'];
@@ -75,7 +69,17 @@ const rsmq = new RedisSMQ( rsmqOptions );
 const requestWorker = new RSMQWorker(requestQueueName, rsmqOptions);
 const errorWorker = new RSMQWorker(errorQueueName, rsmqOptions);
 const responseWorker = new RSMQWorker(responseQueueName, rsmqOptions);
-const allowedBasePath = BeanUtils.getValue(backendConfig, 'allowedBasePath') || [];
+const allowedBasePath = (BeanUtils.getValue(backendConfig, 'allowedBasePath') || []).map(path => {
+    return FileUtils.normalizePathStrict(path);
+});
+
+myLog('STARTING - queue detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
+    ' allowedBasePath:' + allowedBasePath +
+    ' parallelizeDetector: ' + parallelizeDetector +
+    ' useDirectoryCache: ' + useDirectoryCache +
+    ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
+    ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
+    ' breakOnError: ' + breakOnError);
 
 let existingQueues = [];
 myLog('check queues');
@@ -138,9 +142,25 @@ const server = rsmq.listQueuesAsync().then(queues => {
             return next(new Error(error));
         }
 
-        const srcPath = request.fileName;
-        // TODO check srcPath against allowedBasePaths
+        let srcPath = request.fileName;
+        if (request.fileName == undefined) {
+            return next(new Error('filename required'));
+        }
+        srcPath = FileUtils.normalizePathStrict(srcPath);
+        let found = false;
+        for (let basePath of allowedBasePath) {
+            if (srcPath.indexOf(basePath) === 0) {
+                found = true;
+                break;
+            }
+        }
 
+        if (!found === true) {
+            return next(new Error('srcPath not allowed:' + LogUtils.sanitizeLogMsg(srcPath)));
+        }
+        if (!FileUtils.checkConcreteFile(srcPath)) {
+            return next(new Error('srcPath must be a existing file (no symbolic link accepted)' + LogUtils.sanitizeLogMsg(srcPath)));
+        }
 
         let imageDetectors: AbstractObjectDetector[] = [];
         for (const detectorName of request.detectors) {

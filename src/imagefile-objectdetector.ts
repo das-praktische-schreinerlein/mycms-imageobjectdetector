@@ -1,5 +1,5 @@
 // configure first !!!!
-import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
+import {TensorNodeUtils} from './objectdetection/utils/tensor-node-utils';
 const rootDir = 'file://' + __dirname + '/../';
 TensorNodeUtils.initEnvironment(rootDir);
 
@@ -26,12 +26,17 @@ if (!debug || debug === true || parseInt(debug, 10) < 1) {
 }
 
 // check source
-const sourceDir = argv['sourceDir'] || false;
-const destDir = argv['destDir'] || sourceDir;
+let sourceDir = argv['sourceDir'] || false;
 if (sourceDir === false) {
     console.error('parameter sourceDir to process required');
     process.exit(-1);
 }
+sourceDir = FileUtils.normalizePathStrict(sourceDir);
+if (!FileUtils.checkConcreteDirectory(sourceDir)) {
+    console.error('parameter sourceDir must be a existing directory (no symbolic link accepted)', sourceDir);
+    process.exit(-1);
+}
+const destDir = argv['destDir'] || sourceDir;
 
 // check cache
 const useDirectoryCache = argv['useDirectoryCache'] ? true : false;
@@ -53,10 +58,11 @@ if (detectors.length < 1) {
     process.exit(-1);
 }
 myLog('STARTING - detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
-    ' parallelizeDetector: ' + parallelizeDetector +
+    ' sourceDir: ' + sourceDir +
     ' useDirectoryCache: ' + useDirectoryCache +
     ' cacheServiceReadOnly: ' + directoryCacheReadOnly +
     ' forceUpdateDirectoryCache: ' + forceUpdateDirectoryCache +
+    ' parallelizeDetector: ' + parallelizeDetector +
     ' breakOnError: ' + breakOnError);
 
 DetectorUtils.initDetectors(detectors).then(value => {
@@ -66,12 +72,12 @@ DetectorUtils.initDetectors(detectors).then(value => {
     };
     FileUtils.doActionOnFilesFromMediaDir(sourceDir, destDir, '.tmp', mediaTypes,
         function (srcPath, destPath, processorResolve, processorReject, index, count) {
-            console.log('RUNNING - detectors on image ' + index + '/' + count + ': ' + LogUtils.sanitizeLogMsg(srcPath));
+            console.log('RUNNING - detectors on image ' + index + '/' + count + ': ', srcPath);
             const start = new Date();
             DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true, parallelizeDetector).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
-                        console.log('OK found: ' + LogUtils.sanitizeLogMsg(srcPath) +
+                        console.log('OK found: ' + srcPath +
                             ' detector:' + detectedObjects[i].detector +
                             ' class: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].keySuggestion) +
                             ' score:' + detectedObjects[i].precision +
@@ -81,7 +87,7 @@ DetectorUtils.initDetectors(detectors).then(value => {
                     }
                 }
 
-                console.debug('DONE - detectors on image ' + index + '/' + count + ' in ' + (new Date().getTime() - start.getTime()) + 'ms - ' + LogUtils.sanitizeLogMsg(srcPath));
+                console.debug('DONE - detectors on image ' + index + '/' + count + ' in ' + (new Date().getTime() - start.getTime()) + 'ms - ' + srcPath);
                 return processorResolve('OK');
             }).catch(reason => {
                 console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);

@@ -2,10 +2,8 @@ import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/mod
 import {Tensor3D} from '@tensorflow/tfjs';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {FileUtils} from '../../common/utils/file-utils';
-import * as fs from 'fs';
 import {TensorUtils} from '../utils/tensor-utils';
 import {DetectorResultUtils, PicasaObjectDetectionResult} from '../utils/detectorresult-utils';
-import {DetectorUtils} from '../utils/detector-utils';
 
 export class PicasaFileObjectDetector extends AbstractObjectDetector {
     constructor () {
@@ -45,7 +43,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
             const imageFilename = FileUtils.getFilenameFromFilePath(imageUrl);
             let picasaContent: string = undefined;
             try {
-                picasaContent = fs.readFileSync(picasaFile, {encoding: 'UTF-8'});
+                picasaContent = FileUtils.readConcreteFileSync(picasaFile, {encoding: 'UTF-8'});
             } catch (err) {
                 // picasa not exists yet
                 input = undefined;

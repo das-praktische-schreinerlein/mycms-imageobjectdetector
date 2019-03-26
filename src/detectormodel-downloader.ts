@@ -1,5 +1,5 @@
 // configure first !!!!
-import {TensorNodeUtils} from "./objectdetection/utils/tensor-node-utils";
+import {TensorNodeUtils} from './objectdetection/utils/tensor-node-utils';
 const rootDir = 'file://' + __dirname + '/../';
 TensorNodeUtils.initEnvironment(rootDir);
 

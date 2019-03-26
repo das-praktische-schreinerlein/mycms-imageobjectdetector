@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import {
     AbstractDetectorResultCacheService,
     DetectorResultCacheEntry,
@@ -16,7 +15,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
         const cacheFileName = this.getCacheFileNameForImagePath(imagePath);
         let cache: DetectorResultsCacheType = undefined;
         try {
-            cache = JSON.parse(fs.readFileSync(cacheFileName, {encoding: 'UTF-8'}));
+            cache = JSON.parse(FileUtils.readConcreteFileSync(cacheFileName, {encoding: 'UTF-8'}));
         } catch (err) {
             console.warn('cant read cache:', err);
         }
@@ -36,7 +35,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
         }
 
         const cacheFileName = this.getCacheFileNameForImagePath(imagePath);
-        fs.writeFileSync(cacheFileName, JSON.stringify(detectorResultCache));
+        FileUtils.writeConcreteFileSync(cacheFileName, JSON.stringify(detectorResultCache));
     }
 
     public getImageCacheEntry(detectorResultCache: DetectorResultsCacheType, detectorId: string, imagePath: string): DetectorResultCacheEntry {

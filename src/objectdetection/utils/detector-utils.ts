@@ -6,7 +6,6 @@ import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/mod
 import * as Promise_serial from 'promise-serial';
 import {TensorUtils} from './tensor-utils';
 import {isArray} from 'util';
-import * as fs from 'fs';
 import * as download from 'download';
 import * as mkdirp from 'mkdirp';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
@@ -204,7 +203,7 @@ export class DetectorUtils {
                                         return;
                                     }
 
-                                    fs.writeFileSync(absPath, data);
+                                    FileUtils.writeConcreteFileSync(absPath, data);
 
                                     if (path.endsWith('/model.json')) {
                                         // Posenet
