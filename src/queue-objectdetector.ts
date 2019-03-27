@@ -33,6 +33,17 @@ if (!debug || debug === true || parseInt(debug, 10) < 1) {
     console.debug = function() {};
 }
 
+export interface RedisQueueConfig {
+    host: string;
+    port: number;
+    pass: string;
+    db: string;
+    ns: string;
+    requestQueue: string;
+    responseQueue: string;
+    errorQueue: string;
+}
+
 // check cache
 const useDirectoryCache = argv['useDirectoryCache'] ? true : false;
 const breakOnError = argv['breakOnError'] ? true : false;
@@ -42,7 +53,7 @@ const parallelizeDetector: number = argv['parallelizeDetector'] ? parseInt(argv[
 const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
 const filePathConfigJson = argv['c'] || argv['config'] || 'config/queue.json';
 const backendConfig = JSON.parse(FileUtils.readConcreteFileSync(filePathConfigJson, {encoding: 'utf8'}));
-const queueConfig = BeanUtils.getValue(backendConfig, 'redisQueue');
+const queueConfig: RedisQueueConfig = BeanUtils.getValue(backendConfig, 'redisQueue');
 if (queueConfig === undefined) {
     throw new Error('config for redisQueue not exists');
 }
@@ -60,12 +71,12 @@ if (detectors.length < 1) {
 }
 const detectorMap = DetectorFactory.getDetectorMap(detectors);
 
-const requestQueueName = queueConfig['requestQueue'];
-const errorQueueName = queueConfig['errorQueue'];
-const responseQueueName = queueConfig['responseQueue'];
-const rsmqOptions = {host: queueConfig['host'], port: queueConfig['port'], ns: queueConfig['ns'],
-    options: { password: queueConfig['pass'], db: queueConfig['db']}};
-const rsmq = new RedisSMQ( rsmqOptions );
+const requestQueueName = queueConfig.requestQueue;
+const errorQueueName = queueConfig.errorQueue;
+const responseQueueName = queueConfig.responseQueue;
+const rsmqOptions = {host: queueConfig.host, port: queueConfig.port, ns: queueConfig.ns,
+    options: { password: queueConfig.pass, db: queueConfig.db}};
+const rsmq = new RedisSMQ(rsmqOptions);
 const requestWorker = new RSMQWorker(requestQueueName, rsmqOptions);
 const errorWorker = new RSMQWorker(errorQueueName, rsmqOptions);
 const responseWorker = new RSMQWorker(responseQueueName, rsmqOptions);
