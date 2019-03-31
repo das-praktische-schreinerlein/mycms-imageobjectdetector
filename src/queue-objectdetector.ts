@@ -4,7 +4,7 @@ const rootDir = 'file://' + __dirname + '/../';
 TensorNodeUtils.initEnvironment(rootDir);
 
 import {
-    ObjectDetectionRequestType,
+    ObjectDetectionRequestType, ObjectDetectionResponseCode,
     ObjectDetectionResponseType,
     ObjectDetectionState
 } from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
@@ -196,7 +196,9 @@ const server = rsmq.listQueuesAsync().then(queues => {
 
                 let response: ObjectDetectionResponseType = {
                     request: request,
-                    results: detectedObjects
+                    results: detectedObjects,
+                    responseCode: ObjectDetectionResponseCode.OK,
+                    responseMessages: undefined
                 };
 
                 responseWorker.send(JSON.stringify(response), err => {
@@ -232,15 +234,31 @@ const server = rsmq.listQueuesAsync().then(queues => {
     });
     requestWorker.on('error', function(err, msg){
         console.error('ERROR - request', err, msg.id);
-        errorWorker.send(msg.message, err => {
+        let request: ObjectDetectionRequestType;
+        try {
+            request = JSON.parse(msg.message);
+        } catch (error) {
+            console.error('ERROR - while sending error', err, msg.id);
+            msg = DetectorUtils.disposeObj(msg);
+            return;
+        }
+        let response: ObjectDetectionResponseType = {
+            request: request,
+            results: undefined,
+            responseCode: ObjectDetectionResponseCode.NONRECOVERABLE_ERROR,
+            responseMessages: undefined
+        };
+
+
+        errorWorker.send(JSON.stringify(response), err => {
             if (err) {
                 console.error('ERROR - while sending error', err, msg.id);
-                msg= DetectorUtils.disposeObj(msg);
+                msg = DetectorUtils.disposeObj(msg);
                 return;
             }
 
             const res =  requestWorker.del(msg.id);
-            msg= DetectorUtils.disposeObj(msg);
+            msg = DetectorUtils.disposeObj(msg);
             return res;
         });
     });
