@@ -1,6 +1,6 @@
 {
     "name": "imageobjectdetector",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "license": "Apache-2.0",
     "main": "dist/",
     "types": "dist/",
@@ -33,7 +33,7 @@
     },
     "private": true,
     "dependencies": {
-        "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#4.2.0",
+        "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#4.3.0",
         "@tensorflow-models/coco-ssd": "1.0.0",
         "@tensorflow-models/mobilenet": "1.0.0",
         "@tensorflow-models/posenet": "1.0.0",
