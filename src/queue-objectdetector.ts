@@ -74,8 +74,11 @@ const detectorMap = DetectorFactory.getDetectorMap(detectors);
 const requestQueueName = queueConfig.requestQueue;
 const errorQueueName = queueConfig.errorQueue;
 const responseQueueName = queueConfig.responseQueue;
-const rsmqOptions = {host: queueConfig.host, port: queueConfig.port, ns: queueConfig.ns,
-    options: { password: queueConfig.pass, db: queueConfig.db}};
+const rsmqOptions = {
+    host: queueConfig.host, port: queueConfig.port, db: queueConfig.db, ns: queueConfig.ns, redisPrefix: queueConfig.ns,
+    options: {password: queueConfig.pass,
+        host: queueConfig.host, port: queueConfig.port, db: queueConfig.db, ns: queueConfig.ns, redisPrefix: queueConfig.ns}
+};
 const rsmq = new RedisSMQ(rsmqOptions);
 const requestWorker = new RSMQWorker(requestQueueName, rsmqOptions);
 const errorWorker = new RSMQWorker(errorQueueName, rsmqOptions);

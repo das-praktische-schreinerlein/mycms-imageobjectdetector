@@ -71,3 +71,51 @@ node dist\backend\serverAdmin.js --command objectDetectionManager --action sendQ
 node dist\backend\serverAdmin.js --command objectDetectionManager --action receiveQueueResponses --debug 1
 ```
 - show and change detected object on [mytourbook search](http://localhost:4301/mytbdev/de/sections/start/search/jederzeit/ueberall/alles/egal/ungefiltert/relevance/odimgobject/10/1) or [mytourbook dashboard](http://localhost:4301/mytbdev/de/)
+
+## HINTS
+- HINT for picasa-detector: after running picasa create empty picasa.ini-file before running picasa-detector
+```bash
+sbin/create-picasa_ini-for-image-dirs.sh /cygdrive/d/Bilder/mediadb/pics_full/
+```
+
+## show redis-queue
+- get all keys
+```
+127.0.0.1:6379> keys *
+```
+- get content of queue
+```
+127.0.0.1:6379> hkeys rsmq-test:mycms-objectdetector-request:Q
+1) "vt"
+2) "delay"
+3) "created"
+4) "fjiza2ykjb71OfKMfmk7QweY5Cfj1rDt"
+5) "modified"
+6) "totalsent"
+7) "totalrecv"
+8) "fjiza2z0rfXL0O89ItPQOr5WCigoTueq"
+9) "maxsize"
+
+127.0.0.1:6379> hget rsmq-test:mycms-objectdetector-request:Q fjiza2z0rfXL0O89ItPQOr5WCigoTueq
+"{\"detectors\":[\"tfjs_cocossd_mobilenet_v1\",\"tfjs_cocossd_mobilenet_v2\",\"tfjs_cocossd_lite_mobilenet_v2\",\"tfjs_mobilenet_v1\",\"faceapi\",\"picasafile\"],\"fileName\":\"D:/Bilder/mediadb/pics_full/D__Bilder_digifotos_import-2010-02_20100320-gross-schauen/HPIM2041.JPG\",\"refId\":\"IMAGE_67472\",\"state\":\"OPEN\"}"
+
+127.0.0.1:6379> hgetall rsmq-test:mycms-objectdetector-request:Q
+ 1) "vt"
+ 2) "30"
+ 3) "delay"
+ 4) "0"
+ 5) "created"
+ 6) "1578487446"
+ 7) "fjiza2ykjb71OfKMfmk7QweY5Cfj1rDt"
+ 8) "{\"detectors\":[\"tfjs_cocossd_mobilenet_v1\",\"tfjs_cocossd_mobilenet_v2\",\"tfjs_cocossd_lite_mobilenet_v2\",\"tfjs_mobilenet_v1\",\"faceapi\",\"picasafile\"],\"fileName\":\"D:/Bilder/mediadb/pics_full/D__Bilder_digifotos_import-2010-02_20100320-gross-schauen/HPIM2040.JPG\",\"refId\":\"IMAGE_67471\",\"state\":\"OPEN\"}"
+ 9) "modified"
+10) "1578487446"
+11) "totalsent"
+12) "4"
+13) "totalrecv"
+14) "2"
+15) "fjiza2z0rfXL0O89ItPQOr5WCigoTueq"
+16) "{\"detectors\":[\"tfjs_cocossd_mobilenet_v1\",\"tfjs_cocossd_mobilenet_v2\",\"tfjs_cocossd_lite_mobilenet_v2\",\"tfjs_mobilenet_v1\",\"faceapi\",\"picasafile\"],\"fileName\":\"D:/Bilder/mediadb/pics_full/D__Bilder_digifotos_import-2010-02_20100320-gross-schauen/HPIM2041.JPG\",\"refId\":\"IMAGE_67472\",\"state\":\"OPEN\"}"
+17) "maxsize"
+18) "65536"
+```

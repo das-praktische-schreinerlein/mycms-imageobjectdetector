@@ -22,10 +22,12 @@
 - none
 
 ### improvements
-- none
+- script to prepare picasa.ini-file if nothing found in directory
+- removed unused code
+- deactivated warnings
 
 ### bug fixes
-- none
+- fixed config-options
  
 ### breaking changes
 - none

@@ -5,8 +5,6 @@ import {Tensor3D} from '@tensorflow/tfjs';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
-import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
-import {DetectorUtils} from '../utils/detector-utils';
 
 
 export class TFJsCocossdObjectDetector extends AbstractObjectDetector {

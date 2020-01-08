@@ -3,6 +3,7 @@ import {ImageUtils} from '../../common/utils/image-utils';
 import {FileUtils} from '../../common/utils/file-utils';
 
 const tf = global['TFJS_LOADER'] != undefined ? global['TFJS_LOADER']() : require('@tensorflow/tfjs');
+tf.disableDeprecationWarnings();
 
 export class TensorUtils {
     public static NUMBER_OF_CHANNELS = 3;
