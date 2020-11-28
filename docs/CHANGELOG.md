@@ -2,19 +2,23 @@
  
 # Versions
  
-## Planned
+## 1.1.1
 
 ### new features
 - none
 
 ### improvements
-- none
+- improved documentation
 
 ### bug fixes
-- none 
+- none
  
 ### breaking changes
 - none
+
+### known issues
+- none
+
 
 ## 1.1.0
 
