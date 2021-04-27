@@ -3,6 +3,7 @@
 # Versions
 
 ## 1.1.2
+- improved documentation
 
 ### new features
 - none
@@ -21,6 +22,7 @@
 
 
 ## 1.1.1 (2020-11-28)
+- improved documentation
 
 ### new features
 - none
@@ -39,6 +41,7 @@
 
 
 ## 1.1.0 (2020-03-02)
+- some fixed and code-improvements
 
 ### new features
 - none
@@ -60,3 +63,15 @@
 
 ## 1.0.0 (2019-09-07)
 - initial version
+
+### new features
+- none
+
+### improvements
+- initial version: everything is a improvement
+
+### bug fixes
+- initial version: none
+
+### breaking changes
+- initial version: none
