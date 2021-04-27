@@ -2,7 +2,7 @@
  
 # Versions
  
-## 1.1.1
+## 1.1.1 (2020-11-28)
 
 ### new features
 - none
@@ -20,7 +20,7 @@
 - none
 
 
-## 1.1.0
+## 1.1.0 (2019-09-07)
 
 ### new features
 - none
