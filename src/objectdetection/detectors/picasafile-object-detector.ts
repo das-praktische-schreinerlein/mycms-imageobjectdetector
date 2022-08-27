@@ -55,7 +55,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
             // faces=rect64(2e1a51885bd6a3d5),c7d67040cc019d70;rect64(9a141facc8097269),df4eef387b4aec87;rect64(5ae248fc8b8ba0c4),40c7d683023c278b
             // backuphash=27571
             let imageFileKey = '[' + imageFilename + ']';
-            let startIndexImageFileKey = picasaContent.indexOf(imageFileKey);
+            let startIndexImageFileKey = picasaContent.toLowerCase().indexOf(imageFileKey.toLowerCase());
             if (startIndexImageFileKey < 0) {
                 // ImgArea not found in Picasafile
                 input = undefined;

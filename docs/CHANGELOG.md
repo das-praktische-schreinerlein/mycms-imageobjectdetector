@@ -4,6 +4,7 @@
 
 ## 1.1.2
 - improved documentation
+- fixed picasa-detector: search filename case-insensitive 
 
 ### new features
 - none
@@ -12,7 +13,7 @@
 - improved documentation
 
 ### bug fixes
-- none
+- fixed picasa-detector: search filename case-insensitive
 
 ### breaking changes
 - none
