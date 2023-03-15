@@ -52,5 +52,4 @@ Thumbs.db
 /src/backend/shared-node
 /src/out-tsc
 /cache/
-/package-lock.json
 /assets/models/
