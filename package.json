@@ -56,15 +56,15 @@
         "xmlhttprequest": "1.8.0"
     },
     "devDependencies": {
-        "@compodoc/compodoc": "~1.1.5",
-        "@types/fluent-ffmpeg": "~2.1.6",
-        "@types/node": "~8.10.26",
-        "cross-os": "~1.3.0",
-        "enhanced-resolve": "~4.1.0",
-        "patch-package": "~5.1.1",
-        "rimraf": "~2.6.2",
-        "ts-node": "~2.0.0",
-        "tslint": "~4.5.1",
-        "typescript": "~3.2.4"
+        "@compodoc/compodoc": "1.1.9",
+        "@types/fluent-ffmpeg": "2.1.9",
+        "@types/node": "8.10.40",
+        "cross-os": "1.3.0",
+        "enhanced-resolve": "4.1.0",
+        "patch-package": "5.1.2",
+        "rimraf": "2.6.3",
+        "ts-node": "2.0.0",
+        "tslint": "4.5.1",
+        "typescript": "3.2.4"
     }
 }
