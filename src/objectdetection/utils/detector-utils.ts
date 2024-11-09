@@ -7,7 +7,7 @@ import * as Promise_serial from 'promise-serial';
 import {TensorUtils} from './tensor-utils';
 import {isArray} from 'util';
 import * as download from 'download';
-import * as mkdirp from 'mkdirp';
+import mkdirp from 'mkdirp';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {FileUtils} from '../../common/utils/file-utils';
 import {Tensor3D} from '@tensorflow/tfjs-core';
@@ -195,69 +195,58 @@ export class DetectorUtils {
                             const absDir = assetsDir + dir;
                             const absPath = assetsDir + path;
 
-                            return new Promise<any>((mkdirpResolve, mkdirpReject) => {
-                                mkdirp(absDir, function (err) {
-                                    if (err) {
-                                        console.error(err);
-                                        mkdirpReject(err);
-                                        return;
-                                    }
+                            return mkdirp(absDir).then(() => {
+                                FileUtils.writeConcreteFileSync(absPath, data);
 
-                                    FileUtils.writeConcreteFileSync(absPath, data);
-
-                                    if (path.endsWith('/model.json')) {
-                                        // Posenet
-                                        const config: {} = JSON.parse(data);
-                                        if (isArray(config['weightsManifest'])) {
-                                            const weightsConfig = config['weightsManifest'];
-                                            for (let i = 0; i < weightsConfig.length; i++) {
-                                                if (weightsConfig[i] && weightsConfig[i]['paths']) {
-                                                    for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
-                                                        console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
-                                                        subFiles.push(dir + weightsConfig[i]['paths'][s]);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else if (path.endsWith('/manifest.json')) {
-                                        // Posenet
-                                        const weightsConfig: {} = JSON.parse(data);
-                                        if (!isArray(weightsConfig)) {
-                                            for (const attr in weightsConfig) {
-                                                if (weightsConfig[attr] && weightsConfig[attr]['filename']) {
-                                                    console.error('add subfile', dir + '/' + weightsConfig[attr]['filename']);
-                                                    subFiles.push(dir + weightsConfig[attr]['filename']);
-                                                }
-                                            }
-                                        }
-                                    } else if (path.endsWith('.json')) {
-                                        // cocossd
-                                        const weightsConfig: {} = JSON.parse(data);
-                                        if (isArray(weightsConfig)) {
-                                            for (let i = 0; i < weightsConfig.length; i++) {
-                                                if (weightsConfig[i] && weightsConfig[i]['paths']) {
-                                                    for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
-                                                        console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
-                                                        subFiles.push(dir + weightsConfig[i]['paths'][s]);
-                                                    }
+                                if (path.endsWith('/model.json')) {
+                                    // Posenet
+                                    const config: {} = JSON.parse(data);
+                                    if (isArray(config['weightsManifest'])) {
+                                        const weightsConfig = config['weightsManifest'];
+                                        for (let i = 0; i < weightsConfig.length; i++) {
+                                            if (weightsConfig[i] && weightsConfig[i]['paths']) {
+                                                for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
+                                                    console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
+                                                    subFiles.push(dir + weightsConfig[i]['paths'][s]);
                                                 }
                                             }
                                         }
                                     }
+                                } else if (path.endsWith('/manifest.json')) {
+                                    // Posenet
+                                    const weightsConfig: {} = JSON.parse(data);
+                                    if (!isArray(weightsConfig)) {
+                                        for (const attr in weightsConfig) {
+                                            if (weightsConfig[attr] && weightsConfig[attr]['filename']) {
+                                                console.error('add subfile', dir + '/' + weightsConfig[attr]['filename']);
+                                                subFiles.push(dir + weightsConfig[attr]['filename']);
+                                            }
+                                        }
+                                    }
+                                } else if (path.endsWith('.json')) {
+                                    // cocossd
+                                    const weightsConfig: {} = JSON.parse(data);
+                                    if (isArray(weightsConfig)) {
+                                        for (let i = 0; i < weightsConfig.length; i++) {
+                                            if (weightsConfig[i] && weightsConfig[i]['paths']) {
+                                                for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
+                                                    console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
+                                                    subFiles.push(dir + weightsConfig[i]['paths'][s]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
 
-                                    return mkdirpResolve(subFiles);
-                                });
-                            }).then(value => {
-                                return processorResolve(value);
-                            }).catch(reason => {
-                                return processorReject(reason);
-                            })
+                                return subFiles;
+                            });
+                        }).then(value => {
+                            return processorResolve(value);
                         }).catch(reason => {
                             return processorReject(reason);
-                        })
+                        });
                     });
                 });
-
             }
 
             return Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {

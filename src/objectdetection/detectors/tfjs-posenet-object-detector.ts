@@ -1,17 +1,18 @@
 import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
-import {Tensor3D} from '@tensorflow/tfjs';
+import {Tensor3D} from '@tensorflow/tfjs-core';
 import * as posenet from '@tensorflow-models/posenet';
-import {MobileNetMultiplier, OutputStride, PoseNet} from '@tensorflow-models/posenet';
+import {MobileNetMultiplier, MultiPersonInferenceConfig, PoseNet, PoseNetOutputStride} from '@tensorflow-models/posenet';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
+import {ModelConfig} from '@tensorflow-models/posenet/dist/posenet_model';
 
 
 export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
     private detector: PoseNet;
     private imageScaleFactor = 0.2;
-    private outputStride: OutputStride = 32;
+    private outputStride: PoseNetOutputStride = 32;
     private flipHorizontal = false;
     private maxPoseDetections = 2;
     private multiplier: MobileNetMultiplier = 0.75;
@@ -46,7 +47,14 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            return posenet.load(this.multiplier).then(model => {
+            // FIXME imageScaleFactor: this.imageScaleFactor,
+            const modelConfig: ModelConfig = {
+                inputResolution: undefined, // FIXME
+                architecture: 'MobileNetV1',
+                outputStride: this.outputStride,
+                multiplier: this.multiplier,
+            }
+            return posenet.load(modelConfig).then(model => {
                 this.detector = model;
 
                 return resolve(true);
@@ -59,8 +67,12 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
 
     detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            this.detector.estimateMultiplePoses(input, this.imageScaleFactor, this.flipHorizontal, this.outputStride,
-                this.maxPoseDetections).then(predictions => {
+            const config: MultiPersonInferenceConfig = {
+                flipHorizontal: this.flipHorizontal,
+                maxDetections: this.maxPoseDetections,
+            }
+
+            return this.detector.estimateMultiplePoses(input, config).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(

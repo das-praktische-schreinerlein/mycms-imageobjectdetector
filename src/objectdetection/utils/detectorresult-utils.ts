@@ -1,11 +1,9 @@
-import {
-    ObjectDetectionDetectedObject,
-    ObjectDetectionState
-} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
+import {ObjectDetectionDetectedObject, ObjectDetectionState} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {DetectedObject} from '@tensorflow-models/coco-ssd';
 import {Pose} from '@tensorflow-models/posenet';
-import {FaceDetection} from 'face-api.js';
+//import {FaceDetection} from 'face-api.js';
 import {AbstractObjectDetector} from '../abstract-object-detector';
+import {FaceResult, Result} from '@vladmandic/human';
 
 export interface mobileNetClass {
     className: string;
@@ -24,8 +22,8 @@ export interface PicasaObjectDetectionResult {
 export class DetectorResultUtils {
 
     public static convertDetectedObjectToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                              detectedObj: DetectedObject,
-                                                                              imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                                       detectedObj: DetectedObject,
+                                                                       imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.class || 'Unknown',
@@ -44,8 +42,8 @@ export class DetectorResultUtils {
     }
 
     public static convertPoseToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                    detectedObj: Pose,
-                                                                    imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                             detectedObj: Pose,
+                                                             imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'pose',
@@ -64,8 +62,8 @@ export class DetectorResultUtils {
     }
 
     public static convertMobileNetClassToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                              detectedObj: mobileNetClass,
-                                                                              imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                                       detectedObj: mobileNetClass,
+                                                                       imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'Unknown',
@@ -84,8 +82,10 @@ export class DetectorResultUtils {
     }
 
     public static convertFaceDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                             detectedObj: FaceDetection,
-                                                                             imageUrl: string): ObjectDetectionDetectedObject {
+                                                                      // TODO - migrate faceapi
+                                                                      //       detectedObj: FaceDetection,
+                                                                      detectedObj: any,
+                                                                      imageUrl: string): ObjectDetectionDetectedObject {
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'CommonFace',
@@ -103,9 +103,126 @@ export class DetectorResultUtils {
         };
     }
 
+    public static convertHumanFaceDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
+                                                                           result: Result,
+                                                                           detectedObj: FaceResult,
+                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+        const faceresults: ObjectDetectionDetectedObject[] = [];
+        faceresults.push(<ObjectDetectionDetectedObject>{
+            detector: detector.getDetectorId() + '_face',
+            key: 'CommonFace',
+            keySuggestion: 'CommonFace',
+            keyCorrection: undefined,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
+            objX: detectedObj.box[0],
+            objY:  detectedObj.box[1],
+            objWidth:  detectedObj.box[2],
+            objHeight:  detectedObj.box[3],
+            precision: detectedObj.boxScore,
+            imgWidth: result.width,
+            imgHeight: result.height,
+            fileName: imageUrl
+        });
+
+        if (detectedObj.id && detectedObj.faceScore > 0) {
+            console.error("sdcore", detectedObj.faceScore)
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId() + '_faceid',
+                key: 'faceid_' + detectedObj.id,
+                keySuggestion: 'faceid_' + detectedObj.id,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: detectedObj.faceScore,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        if (detectedObj.age) {
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId() + '_age',
+                key: 'age_' + detectedObj.age,
+                keySuggestion: 'age_' + detectedObj.age,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: detectedObj.score,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        if (detectedObj.emotion && detectedObj.emotion.length > 0) {
+            const emotion = detectedObj.emotion[0];
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId() + '_emotion',
+                key: 'emotion_' + emotion.emotion,
+                keySuggestion: 'emotion_' + emotion.emotion,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: emotion.score,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        if (detectedObj.race && detectedObj.race.length > 0) {
+            const race = detectedObj.race[0];
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId() + '_emotion',
+                key: 'emotion_' + race.race,
+                keySuggestion: 'emotion_' + race.race,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: race.score,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        if (detectedObj.gender) {
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId() + '_gender',
+                key: 'gender_' + detectedObj.gender,
+                keySuggestion: 'gender_' + detectedObj.gender,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: detectedObj.genderScore,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        return faceresults;
+    }
+
     public static convertPicasaObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                             detectedObj: PicasaObjectDetectionResult,
-                                                                             imageUrl: string): ObjectDetectionDetectedObject {
+                                                                              detectedObj: PicasaObjectDetectionResult,
+                                                                              imageUrl: string): ObjectDetectionDetectedObject {
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: (detectedObj.type + '_' + detectedObj.key) || 'CommonFace',
@@ -117,7 +234,6 @@ export class DetectorResultUtils {
             objWidth: detectedObj.rectangle[2] - detectedObj.rectangle[0],
             objHeight: detectedObj.rectangle[3] - detectedObj.rectangle[1],
             precision: 1,
-            imgWidth: detectedObj.imageDimension[0],
             imgHeight: detectedObj.imageDimension[1],
             fileName: imageUrl
         };

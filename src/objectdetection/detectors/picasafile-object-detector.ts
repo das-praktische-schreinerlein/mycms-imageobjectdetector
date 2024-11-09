@@ -1,5 +1,5 @@
 import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
-import {Tensor3D} from '@tensorflow/tfjs';
+import {Tensor3D} from '@tensorflow/tfjs-core';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {FileUtils} from '../../common/utils/file-utils';
 import {TensorUtils} from '../utils/tensor-utils';

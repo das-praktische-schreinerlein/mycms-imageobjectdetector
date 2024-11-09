@@ -1,13 +1,13 @@
 import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
-import * as faceapi from 'face-api.js';
-import {FaceDetection} from 'face-api.js';
-import {Tensor3D} from '@tensorflow/tfjs';
+import {Tensor3D} from '@tensorflow/tfjs-core';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorUtils} from '../utils/detector-utils';
 
+// TODO - migrate faceapi
+// import * as faceapi from 'face-api.js';
 
 export class FaceApiObjectDetector extends AbstractObjectDetector {
     private BASEURL = 'https://github.com/justadudewhohacks/face-api.js/raw/0.18.0/';
@@ -45,8 +45,10 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            const localBasePath = (this.getModelBasePath() + '/').replace(/^file:\/\//, '');
-            return faceapi.nets.ssdMobilenetv1.loadFromDisk( localBasePath).then(model => {
+            // TODO - migrate faceapi
+            // const localBasePath = (this.getModelBasePath() + '/').replace(/^file:\/\//, '');
+            // return faceapi.nets.ssdMobilenetv1.loadFromDisk( localBasePath).then(model => {
+            return Promise.reject().then(() => {
                 return resolve(true);
             }, reason => {
                 console.error('ERROR - initialising ' + this.getDetectorId() + '-detector', reason);
@@ -59,7 +61,8 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             let localTensor: Tensor3D = input['width'] ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS) : undefined;
             let tensor: Tensor3D = input['width'] ? localTensor : <Tensor3D>input;
-            return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
+            // return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
+            return Promise.reject().then((predictions: any) => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(

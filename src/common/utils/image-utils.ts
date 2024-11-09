@@ -1,6 +1,6 @@
 import * as exifReader from 'exif';
 import * as jpeg from 'jpeg-js';
-import {Image, createCanvas} from 'canvas';
+import {createCanvas, Image} from 'canvas';
 
 export class ImageUtils {
 
@@ -18,7 +18,12 @@ export class ImageUtils {
 
         const ret = canvas.getContext('2d').getImageData(0, 0, img.width, img.height);
         // console.debug('duration decoding image via canvas:', new Date().getTime() - start.getTime());
-        return ret;
+        return {
+            colorSpace: 'srgb',
+            data: ret.data,
+            height: ret.height,
+            width: ret.width
+        };
     }
 
     public static readImageDataFromBufferWithJpeg(buf): ImageData {
@@ -38,6 +43,7 @@ export class ImageUtils {
                 }
 
                 return resolve({
+                    colorSpace: 'srgb',
                     data: undefined,
                     width: exif['exif']['ExifImageWidth'] || exif['exif']['PixelXDimension'],
                     height: exif['exif']['ExifImageHeight'] || exif['exif']['PixelYDimension'],

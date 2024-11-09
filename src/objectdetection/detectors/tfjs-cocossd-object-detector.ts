@@ -1,7 +1,7 @@
 import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import {ObjectDetection, ObjectDetectionBaseModel} from '@tensorflow-models/coco-ssd';
-import {Tensor3D} from '@tensorflow/tfjs';
+import {ModelConfig, ObjectDetection, ObjectDetectionBaseModel} from '@tensorflow-models/coco-ssd';
+import {Tensor3D} from '@tensorflow/tfjs-core';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
@@ -42,8 +42,12 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
 
     initDetector(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            return cocoSsd.load(this.modelName,
-                this.getModelBasePath() + 'model.json').then(model => {
+            const modelConfig: ModelConfig = {
+                base: this.modelName,
+                modelUrl: this.getModelBasePath() + 'model.json'
+            }
+
+            return cocoSsd.load(modelConfig).then(model => {
                 this.detector = model;
 
                 return resolve(true);

@@ -2,6 +2,29 @@
  
 # Versions
 
+## 2.0.0
+- updated dependencies
+- updated models to tensorflow-2
+- removed faceapi because its deprecated
+- added new detector human (successor of faceapi)
+
+### new features
+- added new detector human (successor of faceapi)
+
+### improvements
+- updated dependencies
+
+### bug fixes
+- none
+
+### breaking changes
+- updated models to tensorflow-2
+- removed faceapi because its deprecated
+
+### known issues
+- none
+
+
 ## 1.1.2
 - improved documentation
 - fixed picasa-detector: search filename case-insensitive 

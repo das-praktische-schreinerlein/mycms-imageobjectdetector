@@ -4,6 +4,7 @@ import {TFJsMobilenetObjectDetector} from '../detectors/tfjs-mobilenet-object-de
 import {TFJsPosenetObjectDetector} from '../detectors/tfjs-posenet-object-detector';
 import {FaceApiObjectDetector} from '../detectors/faceapi-object-detector';
 import {PicasaFileObjectDetector} from '../detectors/picasafile-object-detector';
+import {HumanApiObjectDetector} from '../detectors/humanapi-object-detector';
 
 export class DetectorFactory {
     public static createDetectors(detectorIds: string, rootDir: string): AbstractObjectDetector[] {
@@ -29,6 +30,9 @@ export class DetectorFactory {
                 case 'faceapi':
                     detectors.push(new FaceApiObjectDetector(rootDir));
                     break;
+                case 'humanapi':
+                    detectors.push(new HumanApiObjectDetector(rootDir));
+                    break;
                 case 'picasafile':
                     detectors.push(new PicasaFileObjectDetector());
                     break;
@@ -50,7 +54,7 @@ export class DetectorFactory {
     }
 
     public static getAvailableDetectorMessage(): string {
-        return 'invalid detectors: use \'tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile\'\n' +
+        return 'invalid detectors: use \'tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile,humanapi\'\n' +
             '-- attention: tfjs_posenet is very slow\n' +
             '-- attention: faceapi got sometimes exception\n'
     }

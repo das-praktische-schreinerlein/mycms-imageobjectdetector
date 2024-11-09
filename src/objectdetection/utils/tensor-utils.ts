@@ -1,4 +1,4 @@
-import {Tensor3D} from '@tensorflow/tfjs';
+import {Tensor3D} from '@tensorflow/tfjs-core';
 import {ImageUtils} from '../../common/utils/image-utils';
 import {FileUtils} from '../../common/utils/file-utils';
 
