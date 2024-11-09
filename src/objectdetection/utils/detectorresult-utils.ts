@@ -3,7 +3,7 @@ import {DetectedObject} from '@tensorflow-models/coco-ssd';
 import {Pose} from '@tensorflow-models/posenet';
 //import {FaceDetection} from 'face-api.js';
 import {AbstractObjectDetector} from '../abstract-object-detector';
-import {FaceResult, Result} from '@vladmandic/human';
+import {BodyResult, FaceResult, ObjectResult, PersonResult, Result} from '@vladmandic/human';
 
 export interface mobileNetClass {
     className: string;
@@ -109,7 +109,7 @@ export class DetectorResultUtils {
                                                                            imageUrl: string): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
         faceresults.push(<ObjectDetectionDetectedObject>{
-            detector: detector.getDetectorId() + '_face',
+            detector: detector.getDetectorId(),
             key: 'CommonFace',
             keySuggestion: 'CommonFace',
             keyCorrection: undefined,
@@ -123,24 +123,6 @@ export class DetectorResultUtils {
             imgHeight: result.height,
             fileName: imageUrl
         });
-
-        if (detectedObj.id && detectedObj.faceScore > 0) {
-            faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId(),
-                key: 'faceid_' + detectedObj.id,
-                keySuggestion: 'faceid_' + detectedObj.id,
-                keyCorrection: undefined,
-                state: ObjectDetectionState.RUNNING_SUGGESTED,
-                objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
-                precision: detectedObj.faceScore,
-                imgWidth: result.width,
-                imgHeight: result.height,
-                fileName: imageUrl
-            });
-        }
 
         if (detectedObj.age) {
             faceresults.push(<ObjectDetectionDetectedObject>{
@@ -215,6 +197,84 @@ export class DetectorResultUtils {
                 fileName: imageUrl
             });
         }
+
+        return faceresults;
+    }
+
+    public static convertHumanObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
+                                                                           result: Result,
+                                                                           detectedObj: ObjectResult,
+                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+        const faceresults: ObjectDetectionDetectedObject[] = [];
+        faceresults.push(<ObjectDetectionDetectedObject>{
+            detector: detector.getDetectorId(),
+            key: 'object_' + detectedObj.label,
+            keySuggestion: 'object_' + detectedObj.label,
+            keyCorrection: undefined,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
+            objX: detectedObj.box[0],
+            objY:  detectedObj.box[1],
+            objWidth:  detectedObj.box[2],
+            objHeight:  detectedObj.box[3],
+            precision: detectedObj.score,
+            imgWidth: result.width,
+            imgHeight: result.height,
+            fileName: imageUrl
+        });
+
+        if (detectedObj.class) {
+            faceresults.push(<ObjectDetectionDetectedObject>{
+                detector: detector.getDetectorId(),
+                key: 'objectclassid_' + detectedObj.class,
+                keySuggestion: 'objectclassid_' + detectedObj.class,
+                keyCorrection: undefined,
+                state: ObjectDetectionState.RUNNING_SUGGESTED,
+                objX: detectedObj.box[0],
+                objY:  detectedObj.box[1],
+                objWidth:  detectedObj.box[2],
+                objHeight:  detectedObj.box[3],
+                precision: detectedObj.score,
+                imgWidth: result.width,
+                imgHeight: result.height,
+                fileName: imageUrl
+            });
+        }
+
+        return faceresults;
+    }
+
+    public static convertHumanBodyDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
+                                                                             result: Result,
+                                                                             detectedObj: BodyResult,
+                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
+        const faceresults: ObjectDetectionDetectedObject[] = [];
+        faceresults.push(<ObjectDetectionDetectedObject>{
+            detector: detector.getDetectorId(),
+            key: 'body',
+            keySuggestion: 'body',
+            keyCorrection: undefined,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
+            objX: detectedObj.box[0],
+            objY:  detectedObj.box[1],
+            objWidth:  detectedObj.box[2],
+            objHeight:  detectedObj.box[3],
+            precision: detectedObj.score,
+            imgWidth: result.width,
+            imgHeight: result.height,
+            fileName: imageUrl
+        });
+
+        return faceresults;
+    }
+
+    public static convertHumanPersonDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
+                                                                           result: Result,
+                                                                           detectedObj: PersonResult,
+                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+        const faceresults: ObjectDetectionDetectedObject[] = [];
+
+        // TODO check for usind all for this
+        // TODO extend model do identify objec and add subdetector
 
         return faceresults;
     }

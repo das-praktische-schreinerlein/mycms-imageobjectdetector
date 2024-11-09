@@ -164,6 +164,30 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
                     }
                 }
 
+                for (let i = 0; i < result.object.length; i++) {
+                    const mappedResults: ObjectDetectionDetectedObject[] =
+                        DetectorResultUtils.convertHumanObjectDetectionToObjectDetectionDetectedObject(this, result, result.object[i], imageUrl);
+                    for (let j = 0; j < mappedResults.length; j++) {
+                        detectedObjects.push(mappedResults[j]);
+                    }
+                }
+
+                for (let i = 0; i < result.body.length; i++) {
+                    const mappedResults: ObjectDetectionDetectedObject[] =
+                        DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(this, result, result.body[i], imageUrl);
+                    for (let j = 0; j < mappedResults.length; j++) {
+                        detectedObjects.push(mappedResults[j]);
+                    }
+                }
+
+                for (let i = 0; i < result.persons.length; i++) {
+                    const mappedResults: ObjectDetectionDetectedObject[] =
+                        DetectorResultUtils.convertHumanPersonDetectionToObjectDetectionDetectedObject(this, result, result.persons[i], imageUrl);
+                    for (let j = 0; j < mappedResults.length; j++) {
+                        detectedObjects.push(mappedResults[j]);
+                    }
+                }
+
                 this.detector.tf.dispose(tensor);
                 localTensor = DetectorUtils.disposeObj(localTensor);
                 input = undefined;
