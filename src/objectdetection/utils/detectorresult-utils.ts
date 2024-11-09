@@ -126,7 +126,7 @@ export class DetectorResultUtils {
 
         if (detectedObj.id && detectedObj.faceScore > 0) {
             faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId() + '_faceid',
+                detector: detector.getDetectorId(),
                 key: 'faceid_' + detectedObj.id,
                 keySuggestion: 'faceid_' + detectedObj.id,
                 keyCorrection: undefined,
@@ -144,9 +144,9 @@ export class DetectorResultUtils {
 
         if (detectedObj.age) {
             faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId() + '_age',
-                key: 'age_' + detectedObj.age,
-                keySuggestion: 'age_' + detectedObj.age,
+                detector: detector.getDetectorId(),
+                key: 'face_age_' + Math.round(detectedObj.age),
+                keySuggestion: 'face_age_' + Math.round(detectedObj.age),
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
@@ -163,9 +163,9 @@ export class DetectorResultUtils {
         if (detectedObj.emotion && detectedObj.emotion.length > 0) {
             const emotion = detectedObj.emotion[0];
             faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId() + '_emotion',
-                key: 'emotion_' + emotion.emotion,
-                keySuggestion: 'emotion_' + emotion.emotion,
+                detector: detector.getDetectorId(),
+                key: 'face_emotion_' + emotion.emotion,
+                keySuggestion: 'face_emotion_' + emotion.emotion,
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
@@ -182,9 +182,9 @@ export class DetectorResultUtils {
         if (detectedObj.race && detectedObj.race.length > 0) {
             const race = detectedObj.race[0];
             faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId() + '_emotion',
-                key: 'emotion_' + race.race,
-                keySuggestion: 'emotion_' + race.race,
+                detector: detector.getDetectorId(),
+                key: 'face_race_' + race.race,
+                keySuggestion: 'face_race_' + race.race,
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
@@ -200,9 +200,9 @@ export class DetectorResultUtils {
 
         if (detectedObj.gender) {
             faceresults.push(<ObjectDetectionDetectedObject>{
-                detector: detector.getDetectorId() + '_gender',
-                key: 'gender_' + detectedObj.gender,
-                keySuggestion: 'gender_' + detectedObj.gender,
+                detector: detector.getDetectorId(),
+                key: 'face_gender_' + detectedObj.gender,
+                keySuggestion: 'face_gender_' + detectedObj.gender,
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
