@@ -125,7 +125,6 @@ export class DetectorResultUtils {
         });
 
         if (detectedObj.id && detectedObj.faceScore > 0) {
-            console.error("sdcore", detectedObj.faceScore)
             faceresults.push(<ObjectDetectionDetectedObject>{
                 detector: detector.getDetectorId() + '_faceid',
                 key: 'faceid_' + detectedObj.id,

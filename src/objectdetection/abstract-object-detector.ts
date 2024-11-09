@@ -38,5 +38,8 @@ export abstract class AbstractObjectDetector {
 
     public abstract getModelBaseUrl(): string;
 
+    public getModelBaseUrlSuffix(): string {
+        return '';
+    }
     public abstract getModelAssetsDir(): string;
 }

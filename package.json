@@ -9,7 +9,7 @@
         "build-run": "npm run build && npm run run-detector",
         "clear-models": "cross-os clean-download-models",
         "download-models": "node dist/detectormodel-downloader.js",
-        "download-all-models-old": "node dist/detectormodel-downloader.js --detectors tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,humanapi",
+        "download-all-models": "node dist/detectormodel-downloader.js --detectors tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,humanapi",
         "prepare": "patch-package",
         "prepare-build": "cross-os prepare-build-os",
         "prepare-build-os": {

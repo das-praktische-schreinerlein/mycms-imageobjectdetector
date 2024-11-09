@@ -34,6 +34,10 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
         return this.BASEURL;
     }
 
+    getModelBaseUrlSuffix(): string {
+        return '?tfjs-format=file';
+    }
+
     getModelAssetsDir(): string {
         return this.assetsDir;
     }

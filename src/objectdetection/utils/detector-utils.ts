@@ -162,10 +162,12 @@ export class DetectorUtils {
                 modelFiles.push(modelFile);
             }
 
-            DetectorUtils.downLoadModelFiles(detector.getModelBaseUrl(), modelFiles, detector.getModelAssetsDir()).then((subFiles) => {
+            DetectorUtils.downLoadModelFiles(detector.getModelBaseUrl(), modelFiles, detector.getModelAssetsDir(),
+                detector.getModelBaseUrlSuffix()).then((subFiles) => {
                 console.log('DONE - ' + detector.getDetectorId() + '-basefiles downloaded!');
                 if (subFiles.length > 0) {
-                    DetectorUtils.downLoadModelFiles(detector.getModelBaseUrl(), subFiles, detector.getModelAssetsDir()).then((subFiles) => {
+                    DetectorUtils.downLoadModelFiles(detector.getModelBaseUrl(), subFiles, detector.getModelAssetsDir(),
+                        detector.getModelBaseUrlSuffix()).then((subFiles) => {
                         console.log('DONE - ' + detector.getDetectorId() + '-subfiles downloaded!');
                         return processorResolve(true);
                     }).catch(reason => {
@@ -182,14 +184,14 @@ export class DetectorUtils {
         });
     }
 
-    public static downLoadModelFiles(baseUrl: string, files: string[], assetsDir: string): Promise<string[]> {
+    public static downLoadModelFiles(baseUrl: string, files: string[], assetsDir: string, baseUrlSuffix: string): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
             const funcs = [];
             for (const path of files) {
                 funcs.push(function () {
                     return new Promise<string>((processorResolve, processorReject) => {
-                        console.error('download', path);
-                        return download(baseUrl + path).then(data => {
+                        console.log('download', path, baseUrl + path + baseUrlSuffix);
+                        return download(baseUrl + path + baseUrlSuffix).then(data => {
                             const subFiles = [];
                             const dir = FileUtils.getDirectoryFromFilePath(path);
                             const absDir = assetsDir + dir;
@@ -206,7 +208,7 @@ export class DetectorUtils {
                                         for (let i = 0; i < weightsConfig.length; i++) {
                                             if (weightsConfig[i] && weightsConfig[i]['paths']) {
                                                 for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
-                                                    console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
+                                                    console.log('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
                                                     subFiles.push(dir + weightsConfig[i]['paths'][s]);
                                                 }
                                             }
@@ -218,7 +220,7 @@ export class DetectorUtils {
                                     if (!isArray(weightsConfig)) {
                                         for (const attr in weightsConfig) {
                                             if (weightsConfig[attr] && weightsConfig[attr]['filename']) {
-                                                console.error('add subfile', dir + '/' + weightsConfig[attr]['filename']);
+                                                console.log('add subfile', dir + '/' + weightsConfig[attr]['filename']);
                                                 subFiles.push(dir + weightsConfig[attr]['filename']);
                                             }
                                         }
@@ -230,7 +232,7 @@ export class DetectorUtils {
                                         for (let i = 0; i < weightsConfig.length; i++) {
                                             if (weightsConfig[i] && weightsConfig[i]['paths']) {
                                                 for (let s = 0; s < weightsConfig[i]['paths'].length; s++) {
-                                                    console.error('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
+                                                    console.log('add subfile', dir + '/' + weightsConfig[i]['paths'][s]);
                                                     subFiles.push(dir + weightsConfig[i]['paths'][s]);
                                                 }
                                             }
@@ -253,7 +255,7 @@ export class DetectorUtils {
                 const subFiles = [];
                 for (let i = 0; i < arrayOfResults.length; i++) {
                     for (let s = 0; s < arrayOfResults[i].length; s++) {
-                        console.error('add subfile of result', arrayOfResults[i][s]);
+                        console.log('add subfile of result', arrayOfResults[i][s]);
                         subFiles.push(arrayOfResults[i][s]);
                     }
                 }
