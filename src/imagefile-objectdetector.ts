@@ -57,6 +57,8 @@ if (detectors.length < 1) {
     console.error(DetectorFactory.getAvailableDetectorMessage(), argv);
     process.exit(-1);
 }
+
+const startDirectory = new Date();
 myLog('STARTING - detection with detectors: ' + DetectorUtils.getDetectorIds(detectors).join(',') +
     ' sourceDir: ' + sourceDir +
     ' useDirectoryCache: ' + useDirectoryCache +
@@ -73,7 +75,7 @@ DetectorUtils.initDetectors(detectors).then(value => {
     FileUtils.doActionOnFilesFromMediaDir(sourceDir, destDir, '.tmp', mediaTypes,
         function (srcPath, destPath, processorResolve, processorReject, index, count) {
             console.log('RUNNING - detectors on image ' + index + '/' + count + ': ', srcPath);
-            const start = new Date();
+            const startImage = new Date();
             DetectorUtils.detectFromImageUrl(detectors, srcPath, detectorCacheService, true, parallelizeDetector).then(detectedObjects => {
                 if (detectedObjects) {
                     for (let i = 0; i < detectedObjects.length; i++) {
@@ -93,17 +95,17 @@ DetectorUtils.initDetectors(detectors).then(value => {
                     }
                 }
 
-                console.debug('DONE - detectors on image ' + index + '/' + count + ' in ' + (new Date().getTime() - start.getTime()) + 'ms - ' + srcPath);
+                console.debug('DONE - detectors on image ' + index + '/' + count + ' in ' + (new Date().getTime() - startImage.getTime()) + 'ms - ' + srcPath);
                 return processorResolve('OK');
             }).catch(reason => {
                 console.error('ERROR -  detecting results:' + LogUtils.sanitizeLogMsg(srcPath), reason);
                 return breakOnError ? processorReject(reason) : processorResolve(undefined);
             });
         }).then(value1 => {
-        myLog('DONE - detection');
+        myLog('DONE - detection  in ' + (new Date().getTime() - startDirectory.getTime()) + 'ms');
     }).catch(reason => {
-        console.error('ERROR -  detecting results:', reason);
+        console.error('ERROR -  detecting results in' + (new Date().getTime() - startDirectory.getTime()) + 'ms - ', reason);
     });
 }).catch(reason => {
-    console.error('ERROR - initializing detectors:', reason);
+    console.error('ERROR - initializing detectors in ' + (new Date().getTime() - startDirectory.getTime()) + 'ms - ', reason);
 });

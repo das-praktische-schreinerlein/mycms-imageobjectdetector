@@ -7,12 +7,16 @@
 - updated models to tensorflow-2
 - removed faceapi because its deprecated
 - added new detector human (successor of faceapi)
+- added new fields to model (details parent, description)
+- improved caching
 
 ### new features
 - added new detector human (successor of faceapi)
+- added new fields to model (details parent, description)
 
 ### improvements
 - updated dependencies
+- improved caching
 
 ### bug fixes
 - none

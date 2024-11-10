@@ -34,7 +34,7 @@
     "private": true,
     "dependencies": {
         "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#6.1.0",
-        "@vladmandic/human": "3.2.1",
+        "@mongodb-js/zstd": "1.2.2",
         "@tensorflow-models/coco-ssd": "2.2.3",
         "@tensorflow-models/mobilenet": "2.1.1",
         "@tensorflow-models/posenet": "2.2.2",
@@ -43,6 +43,7 @@
         "@tensorflow/tfjs-core": "4.22.0",
         "@tensorflow/tfjs-node": "4.22.0",
         "@tensorflow/tfjs-node-gpu": "4.22.0",
+        "@vladmandic/human": "3.2.1",
         "canvas": "2.11.2",
         "domino": "2.1.6",
         "download": "7.1.0",

@@ -44,113 +44,140 @@ export class DetectorUtils {
                                      detectorResultCacheService: AbstractDetectorResultCacheService,
                                      breakOnError: boolean,
                                      parallelize: number): Promise<ObjectDetectionDetectedObject[]> {
-        return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            let detectorResultCache: DetectorResultsCacheType = undefined;
-            if (detectorResultCacheService) {
-                detectorResultCache = detectorResultCacheService.readImageCache(imageUrl, true);
-            }
+        let detectorResultCachePromise: Promise<DetectorResultsCacheType>;
 
-            // use cached entries if for all detectors exists
-            let detectedCachedObjects = undefined;
-            let alreadyCached = true;
-            let expectedInputRequirements = {};
-            for (const detector of detectors) {
-                const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
-                if (cacheEntry) {
-                    if (cacheEntry.results && !detectedCachedObjects) {
-                        // result defined: prepare list
-                        detectedCachedObjects = [];
-                    }
-                    for (let s = 0; s < cacheEntry.results.length; s++) {
-                        detectedCachedObjects.push(cacheEntry.results[s]);
-                    }
-                } else {
-                    alreadyCached = false;
-                    expectedInputRequirements[detector.getExpectedInputRequirements()] = true;
-                    break;
-                }
-            }
-            if (alreadyCached) {
-                return resolve(detectedCachedObjects);
-            }
+        if (detectorResultCacheService) {
+            detectorResultCachePromise = detectorResultCacheService.readImageCache(imageUrl, true).then(result => {
+                return Promise.resolve(result);
+            }).catch(() => {
+                return Promise.reject('error while reading cache');
+            });
+        } else {
+            detectorResultCachePromise = Promise.reject('no cache');
+        }
 
-            let dataPromise: Promise<Tensor3D|ImageData>;
-            if (expectedInputRequirements[DetectorInputRequirement.TENSOR]) {
-                dataPromise = TensorUtils.readImageTensorFromLocation(imageUrl);
-            } else if (expectedInputRequirements[DetectorInputRequirement.IMAGEDATA]) {
-                dataPromise = TensorUtils.readImageFromLocation(imageUrl);
-            } else if (expectedInputRequirements[DetectorInputRequirement.IMAGEDIMENSION]) {
-                dataPromise = TensorUtils.readImageMetaDataFromLocation(imageUrl);
-            } else {
-                dataPromise = TensorUtils.readImageTensorFromLocation(imageUrl);
-            }
-
-            dataPromise.then(input => {
-                let cacheUpdated = false;
-                const funcs = [];
+        return detectorResultCachePromise.catch((reason) => {
+            console.log('not using cache:', reason);
+            return Promise.resolve(undefined);
+        }).then((detectorResultCache: DetectorResultsCacheType) => {
+            return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
+                // use cached entries if for all detectors exists
+                let detectedCachedObjects = undefined;
+                let alreadyCached = true;
+                let expectedInputRequirements = {};
                 for (const detector of detectors) {
-                    funcs.push(async function () {
-                        return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
-                            const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl): undefined;
-                            if (cacheEntry) {
-                                return processorResolve(cacheEntry.results)
-                            }
-
-                            const start = new Date();
-                            console.debug('START detector in ' + (new Date().getTime()) + 'ms - ', detector.getDetectorId());
-                            return detector.detectFromCommonInput(input, imageUrl)
-                                .then(detectedObjects => {
-                                    cacheUpdated = true;
-                                    if (detectedObjects) {
-                                        detectorResultCacheService ? detectorResultCacheService.setImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl, detectedObjects) : undefined;
-                                    }
-
-                                    console.debug('DONE detector in ' + (new Date().getTime() - start.getTime()) + 'ms - ', detector.getDetectorId());
-                                    return processorResolve(detectedObjects);
-                                })
-                                .catch(reason => {
-                                    return breakOnError ? processorReject(reason) : processorResolve(undefined);
-                                });
-                        })
-                    });
+                    const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
+                    if (cacheEntry) {
+                        if (cacheEntry.results && !detectedCachedObjects) {
+                            // result defined: prepare list
+                            detectedCachedObjects = [];
+                        }
+                        for (let s = 0; s < cacheEntry.results.length; s++) {
+                            detectedCachedObjects.push(cacheEntry.results[s]);
+                        }
+                    } else {
+                        alreadyCached = false;
+                        expectedInputRequirements[detector.getExpectedInputRequirements()] = true;
+                        break;
+                    }
+                }
+                if (alreadyCached) {
+                    return resolve(detectedCachedObjects);
                 }
 
-                return Promise_serial(funcs, {parallelize: parallelize}).then(arrayOfDetectorResults => {
-                    let detectedObjects: ObjectDetectionDetectedObject[] = undefined;
-                    for (let i = 0; i < arrayOfDetectorResults.length; i++) {
-                        const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
-                        if (detectorResult) {
-                            if (!detectedObjects) {
-                                detectedObjects = []
-                            }
-                            for (let s = 0; s < detectorResult.length; s++) {
-                                detectedObjects.push(detectorResult[s]);
+                let dataPromise: Promise<Tensor3D | ImageData>;
+                if (expectedInputRequirements[DetectorInputRequirement.TENSOR]) {
+                    dataPromise = TensorUtils.readImageTensorFromLocation(imageUrl);
+                } else if (expectedInputRequirements[DetectorInputRequirement.IMAGEDATA]) {
+                    dataPromise = TensorUtils.readImageFromLocation(imageUrl);
+                } else if (expectedInputRequirements[DetectorInputRequirement.IMAGEDIMENSION]) {
+                    dataPromise = TensorUtils.readImageMetaDataFromLocation(imageUrl);
+                } else {
+                    dataPromise = TensorUtils.readImageTensorFromLocation(imageUrl);
+                }
+
+                dataPromise.then(input => {
+                    let cacheUpdated = false;
+                    const funcs = [];
+                    for (const detector of detectors) {
+                        funcs.push(async function () {
+                            return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
+                                console.debug('START detector - ', detector.getDetectorId());
+                                const startCache = new Date();
+                                const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
+                                if (cacheEntry) {
+                                    console.debug('SKIPPED cached detector in ' + (new Date().getTime() - startCache.getTime()) + 'ms - ', detector.getDetectorId());
+                                    return processorResolve(cacheEntry.results)
+                                }
+
+                                const start = new Date();
+                                return detector.detectFromCommonInput(input, imageUrl)
+                                    .then(detectedObjects => {
+                                        cacheUpdated = true;
+                                        if (detectedObjects) {
+                                            detectorResultCacheService
+                                                ? detectorResultCacheService.setImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl, detectedObjects)
+                                                : undefined;
+                                        }
+
+                                        console.debug('DONE detector in ' + (new Date().getTime() - start.getTime()) + 'ms - ', detector.getDetectorId());
+                                        return processorResolve(detectedObjects);
+                                    })
+                                    .catch(reason => {
+                                        return breakOnError ? processorReject(reason) : processorResolve(undefined);
+                                    });
+                            })
+                        });
+                    }
+
+                    return Promise_serial(funcs, {parallelize: parallelize}).then(arrayOfDetectorResults => {
+                        let detectedObjects: ObjectDetectionDetectedObject[] = undefined;
+                        for (let i = 0; i < arrayOfDetectorResults.length; i++) {
+                            const detectorResult: ObjectDetectionDetectedObject[] = arrayOfDetectorResults[i];
+                            if (detectorResult !== undefined && detectorResult !== null) {
+                                if (detectedObjects === undefined) {
+                                    detectedObjects = []
+                                }
+
+                                for (let s = 0; s < detectorResult.length; s++) {
+                                    if (detectorResult[s] !== undefined && detectorResult[s] !== null) {
+                                        detectedObjects.push(detectorResult[s]);
+                                    }
+                                }
                             }
                         }
-                    }
 
-                    if (cacheUpdated && detectorResultCacheService) {
-                        detectorResultCacheService.writeImageCache(imageUrl, detectorResultCache);
-                    }
+                        if (cacheUpdated && detectorResultCacheService) {
+                            return detectorResultCacheService.writeImageCache(imageUrl, detectorResultCache).then(() => {
+                                return Promise.resolve(detectedObjects);
+                            }).catch(reason => {
+                                return Promise.resolve(detectedObjects);
+                            });
+                        }
 
-                    detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
-                    detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
-                    input = DetectorUtils.disposeObj(input);
+                        return Promise.resolve(detectedObjects);
+                    }).then((detectedObjects: ObjectDetectionDetectedObject[]) => {
+                        detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
+                        detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
+                        input = DetectorUtils.disposeObj(input);
 
-                    return resolve(detectedObjects);
+                        return resolve(detectedObjects);
+                    }).catch(reason => {
+                        input = DetectorUtils.disposeObj(input);
+                        detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
+                        detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
+                        input = DetectorUtils.disposeObj(input);
+
+                        return reject(reason);
+                    });
                 }).catch(reason => {
-                    input = DetectorUtils.disposeObj(input);
                     detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
                     detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
-                    input = DetectorUtils.disposeObj(input);
-
-                    return reject(reason);
-                });
-            }).catch(reason => {
-                detectedCachedObjects = DetectorUtils.disposeObj(detectedCachedObjects);
-                detectorResultCache = DetectorUtils.disposeObj(detectorResultCache);
-                return breakOnError ? reject(reason) : resolve(undefined);
-            })
+                    return breakOnError
+                        ? reject(reason)
+                        : resolve(undefined);
+                })
+            });
         });
     };
 
