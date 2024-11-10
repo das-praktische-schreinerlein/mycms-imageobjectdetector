@@ -71,7 +71,7 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertMobileNetClassToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
+                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i));
                 }
 
                 input = undefined;

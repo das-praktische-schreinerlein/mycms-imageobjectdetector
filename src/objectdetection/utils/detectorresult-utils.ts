@@ -5,7 +5,7 @@ import {Pose} from '@tensorflow-models/posenet';
 import {AbstractObjectDetector} from '../abstract-object-detector';
 import {BodyResult, FaceResult, ObjectResult, PersonResult, Result} from '@vladmandic/human';
 
-export interface mobileNetClass {
+export interface MobileNetClass {
     className: string;
     probability: number;
 }
@@ -23,7 +23,11 @@ export class DetectorResultUtils {
 
     public static convertDetectedObjectToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                        detectedObj: DetectedObject,
-                                                                       imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                                       imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+        if (detectedObj === undefined || detectedObj === null) {
+            return undefined;
+        }
+
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.class || 'Unknown',
@@ -34,6 +38,9 @@ export class DetectorResultUtils {
             objY: detectedObj.bbox[1],
             objWidth: detectedObj.bbox[2],
             objHeight: detectedObj.bbox[3],
+            objType: 'object',
+            objId: this.createUUId([imageUrl, detector.getDetectorId(), 'object', id].join('_')),
+            objParentId: undefined,
             precision: detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
@@ -43,7 +50,11 @@ export class DetectorResultUtils {
 
     public static convertPoseToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                              detectedObj: Pose,
-                                                             imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                             imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+        if (detectedObj === undefined || detectedObj === null) {
+            return undefined;
+        }
+
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'pose',
@@ -54,6 +65,9 @@ export class DetectorResultUtils {
             objY: isNaN(detectedObj.keypoints[0].position.y) ? undefined : detectedObj.keypoints[0].position.y,
             objWidth: isNaN(detectedObj.keypoints[0].position.x) ? undefined : 1,
             objHeight: isNaN(detectedObj.keypoints[0].position.y) ? undefined : 1,
+            objType: 'object',
+            objId: this.createUUId([imageUrl, detector.getDetectorId(), 'object', id].join('_')),
+            objParentId: undefined,
             precision: isNaN(detectedObj.score) ? undefined : detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
@@ -62,8 +76,12 @@ export class DetectorResultUtils {
     }
 
     public static convertMobileNetClassToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                       detectedObj: mobileNetClass,
-                                                                       imageUrl: string, imageDim: number[]): ObjectDetectionDetectedObject {
+                                                                       detectedObj: MobileNetClass,
+                                                                       imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+        if (detectedObj === undefined || detectedObj === null) {
+            return undefined;
+        }
+
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'Unknown',
@@ -74,6 +92,9 @@ export class DetectorResultUtils {
             objY: 0,
             objWidth: 1,
             objHeight: 1,
+            objType: 'object',
+            objId: this.createUUId([imageUrl, detector.getDetectorId(), 'object', id].join('_')),
+            objParentId: undefined,
             precision: detectedObj.probability,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
@@ -86,6 +107,10 @@ export class DetectorResultUtils {
                                                                       //       detectedObj: FaceDetection,
                                                                       detectedObj: any,
                                                                       imageUrl: string): ObjectDetectionDetectedObject {
+        if (detectedObj === undefined || detectedObj === null) {
+            return undefined;
+        }
+
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: detectedObj.className || 'CommonFace',
@@ -96,6 +121,9 @@ export class DetectorResultUtils {
             objY: detectedObj.box.top,
             objWidth: detectedObj.box.width,
             objHeight: detectedObj.box.height,
+            objType: 'object',
+            objId: this.createUUId([imageUrl, detector.getDetectorId(), 'object', detectedObj.id].join('_')),
+            objParentId: undefined,
             precision: detectedObj.classScore,
             imgWidth: detectedObj.imageWidth,
             imgHeight: detectedObj.imageHeight,
@@ -106,8 +134,14 @@ export class DetectorResultUtils {
     public static convertHumanFaceDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                            result: Result,
                                                                            detectedObj: FaceResult,
-                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                           imageUrl: string,
+                                                                           parentId: string): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
+        if (detectedObj === undefined || detectedObj === null) {
+            return faceresults;
+        }
+
+        const faceId = this.createUUId([imageUrl, detector.getDetectorId(), 'face', detectedObj.id].join('_'));
         faceresults.push(<ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'CommonFace',
@@ -119,6 +153,9 @@ export class DetectorResultUtils {
             objWidth:  detectedObj.box[2],
             objHeight:  detectedObj.box[3],
             precision: detectedObj.boxScore,
+            objType: 'face',
+            objId: faceId,
+            objParentId: parentId,
             imgWidth: result.width,
             imgHeight: result.height,
             fileName: imageUrl
@@ -132,9 +169,12 @@ export class DetectorResultUtils {
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
+                objY: detectedObj.box[1],
+                objWidth: detectedObj.box[2],
+                objHeight: detectedObj.box[3],
+                objType: 'face_age',
+                objId: this.createUUId([imageUrl, detector.getDetectorId(), 'face_age', detectedObj.id].join('_')),
+                objParentId: faceId,
                 precision: detectedObj.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
@@ -151,9 +191,12 @@ export class DetectorResultUtils {
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
+                objY: detectedObj.box[1],
+                objWidth: detectedObj.box[2],
+                objHeight: detectedObj.box[3],
+                objType: 'face_emotion',
+                objId: this.createUUId([imageUrl, detector.getDetectorId(), 'face_emotion', detectedObj.id].join('_')),
+                objParentId: faceId,
                 precision: emotion.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
@@ -170,9 +213,12 @@ export class DetectorResultUtils {
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
+                objY: detectedObj.box[1],
+                objWidth: detectedObj.box[2],
+                objHeight: detectedObj.box[3],
+                objType: 'face_race',
+                objId: this.createUUId([imageUrl, detector.getDetectorId(), 'face_race', detectedObj.id].join('_')),
+                objParentId: faceId,
                 precision: race.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
@@ -188,9 +234,12 @@ export class DetectorResultUtils {
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
+                objY: detectedObj.box[1],
+                objWidth: detectedObj.box[2],
+                objHeight: detectedObj.box[3],
+                objType: 'face_gender',
+                objId: this.createUUId([imageUrl, detector.getDetectorId(), 'face_gender', detectedObj.id].join('_')),
+                objParentId: faceId,
                 precision: detectedObj.genderScore,
                 imgWidth: result.width,
                 imgHeight: result.height,
@@ -202,10 +251,15 @@ export class DetectorResultUtils {
     }
 
     public static convertHumanObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                           result: Result,
-                                                                           detectedObj: ObjectResult,
-                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                             result: Result,
+                                                                             detectedObj: ObjectResult,
+                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
+        if (detectedObj === undefined || detectedObj === null) {
+            return faceresults;
+        }
+
+        const objectId = this.createUUId([imageUrl, detector.getDetectorId(), 'object', detectedObj.id].join('_'));
         faceresults.push(<ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'object_' + detectedObj.label,
@@ -213,9 +267,12 @@ export class DetectorResultUtils {
             keyCorrection: undefined,
             state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: detectedObj.box[0],
-            objY:  detectedObj.box[1],
-            objWidth:  detectedObj.box[2],
-            objHeight:  detectedObj.box[3],
+            objY: detectedObj.box[1],
+            objWidth: detectedObj.box[2],
+            objHeight: detectedObj.box[3],
+            objType: 'object',
+            objId: objectId,
+            objParentId: undefined,
             precision: detectedObj.score,
             imgWidth: result.width,
             imgHeight: result.height,
@@ -230,9 +287,12 @@ export class DetectorResultUtils {
                 keyCorrection: undefined,
                 state: ObjectDetectionState.RUNNING_SUGGESTED,
                 objX: detectedObj.box[0],
-                objY:  detectedObj.box[1],
-                objWidth:  detectedObj.box[2],
-                objHeight:  detectedObj.box[3],
+                objY: detectedObj.box[1],
+                objWidth: detectedObj.box[2],
+                objHeight: detectedObj.box[3],
+                objType: 'objectclassid',
+                objId: this.createUUId([imageUrl, detector.getDetectorId(), 'objectclassid', detectedObj.id].join('_')),
+                objParentId: objectId,
                 precision: detectedObj.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
@@ -244,10 +304,14 @@ export class DetectorResultUtils {
     }
 
     public static convertHumanBodyDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                             result: Result,
-                                                                             detectedObj: BodyResult,
-                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                           result: Result,
+                                                                           detectedObj: BodyResult,
+                                                                           imageUrl: string, parentId: string): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
+        if (detectedObj === undefined || detectedObj === null) {
+            return faceresults;
+        }
+
         faceresults.push(<ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'body',
@@ -255,9 +319,12 @@ export class DetectorResultUtils {
             keyCorrection: undefined,
             state: ObjectDetectionState.RUNNING_SUGGESTED,
             objX: detectedObj.box[0],
-            objY:  detectedObj.box[1],
-            objWidth:  detectedObj.box[2],
-            objHeight:  detectedObj.box[3],
+            objY: detectedObj.box[1],
+            objWidth: detectedObj.box[2],
+            objHeight: detectedObj.box[3],
+            objType: 'body',
+            objId: this.createUUId([imageUrl, detector.getDetectorId(), 'body', detectedObj.id].join('_')),
+            objParentId: parentId,
             precision: detectedObj.score,
             imgWidth: result.width,
             imgHeight: result.height,
@@ -268,20 +335,61 @@ export class DetectorResultUtils {
     }
 
     public static convertHumanPersonDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
-                                                                           result: Result,
-                                                                           detectedObj: PersonResult,
-                                                                           imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                             result: Result,
+                                                                             detectedObj: PersonResult,
+                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
+        if (detectedObj === undefined || detectedObj === null) {
+            return faceresults;
+        }
 
-        // TODO check for usind all for this
-        // TODO extend model do identify objec and add subdetector
+        const personId = this.createUUId([imageUrl, detector.getDetectorId(), 'fullperson', detectedObj.id].join('_'));
+        const precisions = [];
+        if (detectedObj.face) {
+            faceresults.push(
+                ...DetectorResultUtils.convertHumanFaceDetectionToObjectDetectionDetectedObject(detector, result, detectedObj.face, imageUrl, personId));
+            precisions.push(detectedObj.face.faceScore);
+        }
 
-        return faceresults;
+        if (detectedObj.body) {
+            faceresults.push(...
+                DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(detector, result, detectedObj.body, imageUrl, personId))
+            precisions.push(detectedObj.body.score);
+        }
+
+        let maxPrecision : number = 0;
+        precisions.forEach(
+            precision => maxPrecision = precision > maxPrecision
+                ? precision
+                : maxPrecision);
+
+        return [<ObjectDetectionDetectedObject>{
+            detector: detector.getDetectorId(),
+            key: 'fullperson',
+            keySuggestion: 'fullperson',
+            keyCorrection: undefined,
+            state: ObjectDetectionState.RUNNING_SUGGESTED,
+            objX: detectedObj.box[0],
+            objY: detectedObj.box[1],
+            objWidth: detectedObj.box[2],
+            objHeight: detectedObj.box[3],
+            objType: 'fullperson',
+            objId: personId,
+            objParentId: undefined,
+            precision: maxPrecision,
+            imgWidth: result.width,
+            imgHeight: result.height,
+            fileName: imageUrl
+        }].concat(faceresults);
     }
 
     public static convertPicasaObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                               detectedObj: PicasaObjectDetectionResult,
                                                                               imageUrl: string): ObjectDetectionDetectedObject {
+        if (detectedObj === undefined || detectedObj === null) {
+            return undefined;
+        }
+
         return <ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: (detectedObj.type + '_' + detectedObj.key) || 'CommonFace',
@@ -296,6 +404,10 @@ export class DetectorResultUtils {
             imgHeight: detectedObj.imageDimension[1],
             fileName: imageUrl
         };
+    }
+
+    public static createUUId(source: string): string {
+        return source.replace(/[^A-Za-z0-9_]/g, '');
     }
 
 }

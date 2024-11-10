@@ -79,11 +79,17 @@ DetectorUtils.initDetectors(detectors).then(value => {
                     for (let i = 0; i < detectedObjects.length; i++) {
                         console.log('OK found: ' + srcPath +
                             ' detector:' + detectedObjects[i].detector +
+                            ' objType: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].objType) +
                             ' class: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].keySuggestion) +
                             ' score:' + detectedObjects[i].precision +
                             ' x/y/w/h:[', [detectedObjects[i].objX, detectedObjects[i].objY, detectedObjects[i].objWidth,
-                                           detectedObjects[i].objHeight].join(','), ']' +
-                            ' dim:[', [detectedObjects[i].imgWidth, detectedObjects[i].imgHeight].join(','), ']');
+                                detectedObjects[i].objHeight].join(','), ']' +
+                            ' dim:[', [detectedObjects[i].imgWidth, detectedObjects[i].imgHeight].join(','),
+                            ' objId: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].objId) +
+                            (detectedObjects[i].objParentId
+                                ? ' objParentId: ' + LogUtils.sanitizeLogMsg(detectedObjects[i].objParentId)
+                                : '') +
+                            ']');
                     }
                 }
 

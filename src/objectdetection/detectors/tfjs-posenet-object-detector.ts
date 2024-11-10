@@ -77,7 +77,7 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertPoseToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input)));
+                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i));
                 }
 
                 input = undefined;
