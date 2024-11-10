@@ -9,7 +9,7 @@ import {compress, decompress} from '@mongodb-js/zstd';
 import * as fs from 'fs';
 
 export class DetectorResultDirectoryCacheService extends AbstractDetectorResultCacheService {
-    constructor(readOnly: boolean, forceUpdate: boolean) {
+    constructor(readOnly: boolean, forceUpdate: boolean, private checkCache: boolean) {
         super(readOnly, forceUpdate);
     }
 
@@ -73,11 +73,10 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
         const zstdFileName = cacheFileName + '.zstd';
         const json = JSON.stringify(detectorResultCache);
         const buffer = Buffer.from(json);
-        const startdate = new Date();
+        const startDate = new Date();
         return compress(buffer, 2).then((compressed) => {
             let checkPromise: Promise<boolean>;
-
-            if (true) {
+            if (this.checkCache) {
                 checkPromise = decompress(compressed).then((decompressed) => {
                     if (decompressed.toString('utf-8') !== json) {
                         console.warn('cant write zstd-cache error while checking:', zstdFileName, 'decompressed differ');
@@ -96,7 +95,7 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
             return checkPromise.then(() => {
                 FileUtils.writeConcreteFileSync(zstdFileName, compressed);
                 console.log('wrote zstd-cache', zstdFileName, buffer.length, 'Bytes', compressed.length, 'Bytes',
-                    new Date().getTime() - startdate.getTime(), 'ms');
+                    new Date().getTime() - startDate.getTime(), 'ms');
                 return Promise.resolve(true);
             })
         }).catch(error => {

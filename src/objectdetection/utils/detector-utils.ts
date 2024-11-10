@@ -57,16 +57,20 @@ export class DetectorUtils {
         }
 
         return detectorResultCachePromise.catch((reason) => {
-            console.log('not using cache:', reason);
+            console.debug('not using cache:', reason, imageUrl);
             return Promise.resolve(undefined);
         }).then((detectorResultCache: DetectorResultsCacheType) => {
             return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
                 // use cached entries if for all detectors exists
+                const startAll = new Date();
                 let detectedCachedObjects = undefined;
                 let alreadyCached = true;
                 let expectedInputRequirements = {};
                 for (const detector of detectors) {
-                    const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
+                    const startCache = new Date();
+                    const cacheEntry = detectorResultCacheService
+                        ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl)
+                        : undefined;
                     if (cacheEntry) {
                         if (cacheEntry.results && !detectedCachedObjects) {
                             // result defined: prepare list
@@ -75,6 +79,7 @@ export class DetectorUtils {
                         for (let s = 0; s < cacheEntry.results.length; s++) {
                             detectedCachedObjects.push(cacheEntry.results[s]);
                         }
+                        console.debug('SKIPPED cached detector in ' + (new Date().getTime() - startCache.getTime()) + 'ms - ', detector.getDetectorId(), imageUrl);
                     } else {
                         alreadyCached = false;
                         expectedInputRequirements[detector.getExpectedInputRequirements()] = true;
@@ -82,6 +87,7 @@ export class DetectorUtils {
                     }
                 }
                 if (alreadyCached) {
+                    console.debug('SKIPPED all cached detector in ' + (new Date().getTime() - startAll.getTime()) + 'ms', imageUrl);
                     return resolve(detectedCachedObjects);
                 }
 
@@ -102,15 +108,17 @@ export class DetectorUtils {
                     for (const detector of detectors) {
                         funcs.push(async function () {
                             return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
-                                console.debug('START detector - ', detector.getDetectorId());
+                                console.debug('START detector bla - ', detector.getDetectorId());
                                 const startCache = new Date();
-                                const cacheEntry = detectorResultCacheService ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl) : undefined;
+                                const cacheEntry = detectorResultCacheService
+                                    ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl)
+                                    : undefined;
                                 if (cacheEntry) {
-                                    console.debug('SKIPPED cached detector in ' + (new Date().getTime() - startCache.getTime()) + 'ms - ', detector.getDetectorId());
+                                    console.debug('SKIPPED cached detector in ' + (new Date().getTime() - startCache.getTime()) + 'ms - ', detector.getDetectorId(), imageUrl);
                                     return processorResolve(cacheEntry.results)
                                 }
 
-                                const start = new Date();
+                                const startDetection = new Date();
                                 return detector.detectFromCommonInput(input, imageUrl)
                                     .then(detectedObjects => {
                                         cacheUpdated = true;
@@ -120,7 +128,7 @@ export class DetectorUtils {
                                                 : undefined;
                                         }
 
-                                        console.debug('DONE detector in ' + (new Date().getTime() - start.getTime()) + 'ms - ', detector.getDetectorId());
+                                        console.debug('DONE detector in ' + (new Date().getTime() - startDetection.getTime()) + 'ms - ', detector.getDetectorId(), imageUrl);
                                         return processorResolve(detectedObjects);
                                     })
                                     .catch(reason => {

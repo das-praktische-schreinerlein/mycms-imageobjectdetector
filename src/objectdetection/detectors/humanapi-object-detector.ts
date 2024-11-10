@@ -198,7 +198,6 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
                 tensor = undefined;
                 return resolve(detectedObjects);
             }).catch (error => {
-                console.log('blubsibum', error);
                 console.error('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + LogUtils.sanitizeLogMsg(imageUrl), error);
                 this.detector.tf.dispose(tensor);
                 localTensor = DetectorUtils.disposeObj(localTensor);

@@ -50,7 +50,9 @@ const breakOnError = argv['breakOnError'] ? true : false;
 const directoryCacheReadOnly = argv['directoryCacheReadOnly'] ? true : false;
 const forceUpdateDirectoryCache = argv['forceUpdateDirectoryCache'] ? true : false;
 const parallelizeDetector: number = argv['parallelizeDetector'] ? parseInt(argv['parallelizeDetector'], 10) : 1;
-const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache) : undefined;
+const detectorCacheService: AbstractDetectorResultCacheService = useDirectoryCache
+    ? new DetectorResultDirectoryCacheService(directoryCacheReadOnly, forceUpdateDirectoryCache, false)
+    : undefined;
 const filePathConfigJson = argv['c'] || argv['config'] || 'config/queue.json';
 const backendConfig = JSON.parse(FileUtils.readConcreteFileSync(filePathConfigJson, {encoding: 'utf8'}));
 const queueConfig: RedisQueueConfig = BeanUtils.getValue(backendConfig, 'redisQueue');
