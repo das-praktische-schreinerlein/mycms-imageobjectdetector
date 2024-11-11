@@ -108,7 +108,7 @@ export class DetectorUtils {
                     for (const detector of detectors) {
                         funcs.push(async function () {
                             return new Promise<ObjectDetectionDetectedObject[]>((processorResolve, processorReject) => {
-                                console.debug('START detector bla - ', detector.getDetectorId());
+                                console.debug('START detector - ', detector.getDetectorId());
                                 const startCache = new Date();
                                 const cacheEntry = detectorResultCacheService
                                     ? detectorResultCacheService.getImageCacheEntry(detectorResultCache, detector.getDetectorId(), imageUrl)
