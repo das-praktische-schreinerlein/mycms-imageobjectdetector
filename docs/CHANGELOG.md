@@ -9,10 +9,12 @@
 - added new detector human (successor of faceapi)
 - added new fields to model (details, parent, description)
 - improved caching
+- added cache-utilities
 
 ### new features
 - added new detector human (successor of faceapi)
 - added new fields to model (details, parent, description)
+- added cache-utilities
 
 ### improvements
 - updated dependencies

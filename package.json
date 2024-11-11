@@ -24,6 +24,7 @@
         },
         "run-imagefile-detector": "node dist/imagefile-objectdetector.js",
         "run-queue-detector": "node dist/queue-objectdetector.js",
+        "run-zstd-utility": "node dist/zstd-utility.js",
         "run-common-imagefile-detector-with-cache": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,humanapi,picasafile --useDirectoryCache",
         "run-common-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,humanapi,picasafile",
         "run-all-imagefile-detector": "node dist/imagefile-objectdetector.js --detectors=tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,faceapi,picasafile",

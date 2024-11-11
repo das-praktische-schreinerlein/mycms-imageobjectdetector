@@ -36,6 +36,16 @@ npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --m
 npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --detectors=tfjs_posenet,tfjs_mobilenet_v1 --breakOnError
 ```
 
+## services
+-- decompress zstd-file
+```bash
+npm run run-zstd-utility -- --mode decompress --sourceFile f:/tmp/image-src/bla/.mycmsod-cache.json.zstd --destFile f:/tmp/image-src/bla/cache.json --debug 1
+```
+-- compress a zstd-file
+```bash
+npm run run-zstd-utility -- --mode compress --sourceFile f:/tmp/image-src/bla/cache.json --destFile f:/tmp/image-src/bla/cache.json.zstd --debug 1
+```
+
 ## run detector as queued-service
 - redis: install and configure redis for queue
 - objectdetector: configure queue config/queue.json
