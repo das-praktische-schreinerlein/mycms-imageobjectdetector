@@ -6,7 +6,7 @@
     "types": "dist/",
     "scripts": {
         "build": "npm run prepare-build && tsc",
-        "build-run": "npm run build && npm run run-detector",
+        "build-run": "npm run build && npm run run-imagefile-detector",
         "clear-models": "cross-os clean-download-models",
         "download-models": "node dist/detectormodel-downloader.js",
         "download-all-models": "node dist/detectormodel-downloader.js --detectors tfjs_cocossd_mobilenet_v1,tfjs_cocossd_mobilenet_v2,tfjs_cocossd_lite_mobilenet_v2,tfjs_mobilenet_v1,tfjs_posenet,humanapi",
@@ -33,7 +33,7 @@
     },
     "private": true,
     "dependencies": {
-        "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#6.1.0",
+        "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#6.2.0",
         "@mongodb-js/zstd": "1.2.2",
         "@tensorflow-models/coco-ssd": "2.2.3",
         "@tensorflow-models/mobilenet": "2.1.1",
