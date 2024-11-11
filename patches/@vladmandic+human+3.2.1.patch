@@ -1,0 +1,28 @@
+diff --git a/node_modules/@vladmandic/human/types/human.d.ts b/node_modules/@vladmandic/human/types/human.d.ts
+index 0dbf43c..45d979e 100644
+--- a/node_modules/@vladmandic/human/types/human.d.ts
++++ b/node_modules/@vladmandic/human/types/human.d.ts
+@@ -1,4 +1,4 @@
+-/// <reference path="../src/types/webgpu.d.ts" />
++// ignore /// <reference path="../src/types/webgpu.d.ts" />
+ 
+ /** meta-function that performs draw for: canvas, face, body, hand */
+ declare function all(inCanvas: AnyCanvas, result: Result, drawOptions?: Partial<DrawOptions>): Promise<[void, void, void, void, void] | null>;
+@@ -482,7 +482,7 @@ declare function encodeWeights(tensors: NamedTensorMap | NamedTensor[], group?:
+ 
+ /** Env class that holds detected capabilities */
+ export declare class Env {
+-    #private;
++    //#private;
+     /** Running in Browser */
+     browser: boolean;
+     /** Running in NodeJS */
+@@ -1328,7 +1328,7 @@ declare function http(path: string, loadOptions?: LoadOptions): IOHandler;
+  * @returns instance of {@link Human}
+  */
+ declare class Human {
+-    #private;
++    //#private;
+     /** Current version of Human library in *semver* format */
+     version: string;
+     /** Current configuration
