@@ -15,6 +15,10 @@ export class DetectorResultDirectoryCacheService extends AbstractDetectorResultC
 
     public readImageCache(imagePath: string, returnNewIfNotExists: boolean): Promise<DetectorResultsCacheType> {
         const cacheFileName = this.getCacheFileNameForImagePath(imagePath);
+        return this.readImageCacheFile(cacheFileName, returnNewIfNotExists);
+    }
+
+    public readImageCacheFile(cacheFileName: string, returnNewIfNotExists: boolean): Promise<DetectorResultsCacheType> {
         const zstdFileName = cacheFileName + '.zstd';
         const startdate = new Date();
 

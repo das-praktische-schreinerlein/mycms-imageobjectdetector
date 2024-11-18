@@ -22,6 +22,7 @@
             "linux": "./node_modules/.bin/rimraf assets/models && ./node_modules/.bin/mkdirp assets/models",
             "win32": "node_modules\\.bin\\rimraf assets\\models && node_modules\\.bin\\mkdirp assets\\models"
         },
+        "run-face-matcher": "node dist/face-matcher.js",
         "run-imagefile-detector": "node dist/imagefile-objectdetector.js",
         "run-queue-detector": "node dist/queue-objectdetector.js",
         "run-zstd-utility": "node dist/zstd-utility.js",

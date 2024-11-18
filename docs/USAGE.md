@@ -36,12 +36,19 @@ npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --m
 npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --detectors=tfjs_posenet,tfjs_mobilenet_v1 --breakOnError
 ```
 
+## face-matcher on cache-files with humanapi-detector-results
+- 
+```bash
+npm run run-face-matcher -- --faceDbFile f:/tmp/image-src/facedb.json --matchDbFile f:/tmp/image-src/matchdb.json --cacheFiles f:/tmp/image-src/bla/.mycmsod-cache.json --minSimilarity 0.6 --minFacePrecision 0.5 --debug
+```
+
+
 ## services
--- decompress zstd-file
+- decompress zstd-file
 ```bash
 npm run run-zstd-utility -- --mode decompress --sourceFile f:/tmp/image-src/bla/.mycmsod-cache.json.zstd --destFile f:/tmp/image-src/bla/cache.json --debug 1
 ```
--- compress a zstd-file
+- compress a zstd-file
 ```bash
 npm run run-zstd-utility -- --mode compress --sourceFile f:/tmp/image-src/bla/cache.json --destFile f:/tmp/image-src/bla/cache.json.zstd --debug 1
 ```

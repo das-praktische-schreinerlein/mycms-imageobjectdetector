@@ -10,11 +10,13 @@
 - added new fields to model (details, parent, description)
 - improved caching
 - added cache-utilities
+- added face-matcher-utilities
 
 ### new features
 - added new detector human (successor of faceapi)
 - added new fields to model (details, parent, description)
 - added cache-utilities
+- added face-matcher-utilities
 
 ### improvements
 - updated dependencies
