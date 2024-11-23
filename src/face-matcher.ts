@@ -1,9 +1,8 @@
-import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
+import {ObjectDetectionDetectedObject, ObjectDetectionState} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {FileUtils} from './common/utils/file-utils';
 import * as fs from 'fs';
 import * as minimist from 'minimist';
 import {DetectorResultDirectoryCacheService} from './objectdetection/utils/detectorresult-directorycache';
-import {DetectorResultsCacheType} from '@dps/mycms-commons/dist/commons/services/objectdetectionresult-cache';
 import * as process from 'process';
 
 const argv = minimist(process.argv.slice(2));
@@ -127,40 +126,56 @@ async function main() {
 }
 
 async function readInputCacheFiles(cacheFiles: string[]): Promise<ObjectDetectionDetectedObject[]> {
-    const detectorCache: DetectorResultDirectoryCacheService = new DetectorResultDirectoryCacheService(true, false, false);
-    const promises: Promise<DetectorResultsCacheType>[] = [];
+    const promises: Promise<ObjectDetectionDetectedObject[]>[] = [];
     for (let cacheFile of cacheFiles) {
-        promises.push(detectorCache.readImageCacheFile(cacheFile, true))
+        promises.push(readInputCacheFile(cacheFile))
     }
 
-    const allCaches = await Promise.all(promises);
+    const faceResults = await Promise.all(promises);
+    let allFaces: ObjectDetectionDetectedObject[] = [];
+    faceResults.map(faces => {
+        allFaces = allFaces.concat(faces);
+    });
+
+    return allFaces;
+}
+
+async function readInputCacheFile(cacheFile: string): Promise<ObjectDetectionDetectedObject[]> {
+    const detectorCache: DetectorResultDirectoryCacheService = new DetectorResultDirectoryCacheService(true, false, false);
+    const cache = await detectorCache.readImageCacheFile(cacheFile, true);
     const faces: ObjectDetectionDetectedObject[] = [];
-    allCaches.map(cache => {
-        if (cache.detectors['humanapi'] == undefined) {
-            console.log('SKIPPING - cache -> no humanapi-detector found');
-            return;
-        }
+    const fieDir = FileUtils.getDirectoryFromFilePath(cacheFile);
 
-        const images = cache.detectors['humanapi'].images;
-        for (let imageUrl in images) {
-            const detections = images[imageUrl].results;
-            for (let face of detections) {
-                if (face.objType === 'face' && face.objDescriptor !== undefined && face.objDescriptor.length > 0) {
-                    if (face.precision < minFacePrecision) {
-                        console.log('SKIPPING - imageObjectEntry -> precision < minFacePrecision', imageUrl, face.objId, face.objType, face.precision, minFacePrecision);
-                        continue;
-                    }
+    if (cache.detectors['humanapi'] == undefined) {
+        console.log('SKIPPING - cache -> no humanapi-detector found');
+        return;
+    }
 
-                    face['objDescriptorArr'] = face.objDescriptor.split(',').map(s => parseFloat(s));
-                    faces.push(face);
-                } else {
-                    console.log('SKIPPING - imageObjectEntry -> no face', imageUrl, face.objId, face.objType);
+    const images = cache.detectors['humanapi'].images;
+    for (let imageUrl in images) {
+        const detections = images[imageUrl].results;
+        for (let face of detections) {
+            if (face.objType === 'face' && face.objDescriptor !== undefined && face.objDescriptor.length > 0) {
+                if (face.precision < minFacePrecision) {
+                    console.log('SKIPPING - imageObjectEntry -> precision < minFacePrecision', imageUrl, face.objId, face.objType, face.precision, minFacePrecision);
                     continue;
                 }
+
+                face['objDescriptorArr'] = face.objDescriptor.split(',').map(s => parseFloat(s));
+                face.key = undefined;
+                face.keyCorrection = undefined;
+                face.state = ObjectDetectionState.OPEN;
+                face.keySuggestion = undefined;
+                face.detector = 'humanmatch';
+                face.objType = 'facematch';
+                face.fileName = fieDir + face.fileName;
+                faces.push(face);
+                continue;
             }
+
+            console.log('SKIPPING - imageObjectEntry -> no face', imageUrl, face.objId, face.objType);
         }
-        return;
-    });
+    }
 
     return faces;
 }
