@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>FaceMatch-Viewer</title>
+
+    <script type="text/javascript">
+        document.decompressJsSrc = []
+    </script>
+
+    <script inline  src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <link inline  href="https://datatables.net/download/build/nightly/jquery.dataTables.css" rel="stylesheet" type="text/css" />
+    <script inline  src="https://nightly.datatables.net/js/dataTables.min.js"></script>
+    <script inline  src="https://cdn.rawgit.com/ashl1/datatables-rowsgroup/v1.0.0/dataTables.rowsGroup.js"></script>
+    <style>
+        #tools {
+            background-color: white;
+            border: 2px solid #8CACD3;
+            float: left;
+            width: 100%;
+            position: fixed;
+            z-index: 21;
+        }
+        #toolsDummy{
+            height: 40px;
+        }
+        body {
+            font: 11px "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif !important;
+            color: #333;
+        }
+        table, tr, th, td {
+            vertical-align: top;
+        }
+        td img {
+            border-radius: 5px;
+            border: 1px solid  #8CACD3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="small form-control-sm" id="tools">
+    <div class="form-inline input-group input-group-sm">
+        <b>FaceMatch-Viewer</b>
+        <input type="file" id="importFaceDbJSONFile" style="width: 200px">
+        <input type="file" id="importMatchDbJSONFile" style="width: 200px">
+    </div>
+</div>
+<div id="toolsDummy"> </div>
+
+<div class='row' style="position: relative">
+    <table id="syncfiles" class="table table-striped table-bordered cell-border" style="width:100%">
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var config = {
+        importFaceDbJSONFileRefId: 'importFaceDbJSONFile',
+        importMatchDbJSONFileRefId: 'importMatchDbJSONFile',
+        dataTableRefId: 'syncfiles',
+        showEntryFields: ['objId', 'state', 'precision', 'fileName', 'keySuggestion', 'key'],
+        minSimilarity: 0.6,
+        minPrecision: 0.6,
+        maxMatches: 5
+    }
+
+    var globMatchDbSrc = [];
+    var globFaceDbSrc = [];
+    var faceDb = {};
+
+    function configureUI(config) {
+        var fileFaceDbDialog = document.getElementById(config.importFaceDbJSONFileRefId);
+        fileFaceDbDialog.addEventListener('change', handleImportFaceDbJSONFileSelect, false);
+        var matchDbDialog = document.getElementById(config.importMatchDbJSONFileRefId);
+        matchDbDialog.addEventListener('change', handleImportMatchDbJSONFileSelect, false);
+    }
+
+    function mergeToViewerRecord(faceDocs, matchDocs) {
+        var faces = [];
+        for (const face of faceDocs) {
+            if (face['matches'] === undefined) {
+                face['matches'] = [];
+            }
+            faceDb[face.objId] = face;
+
+            if (config.minPrecision > face.precision) {
+                console.log('SKIP face because of precision', config.minPrecision, face.precision, face)
+                continue;
+            }
+
+            faces.push(face);
+        }
+
+        faces.sort(function(a, b) {
+            return b.precision - a.precision;
+        });
+
+        var data = [];
+        for (const match of matchDocs) {
+            if (config.minSimilarity > match.similarity) {
+                console.log('SKIP match because of similarity', config.minSimilarity, match.similarity, match)
+                continue;
+            }
+
+            if (match.ref1Id === match.ref2Id) {
+                console.log('SKIP match because of the same', match)
+                continue;
+            }
+
+            faceDb[match.ref1Id]['matches'].push(match);
+            faceDb[match.ref2Id]['matches'].push(match);
+        }
+
+        for (const face of faces) {
+            var srcEntry = face;
+
+            face['matches'].sort(function(a, b) {
+                return b.similarity - a.similarity;
+            })
+            face['matches'] = face['matches'].slice(0, Math.min(config.maxMatches, face['matches'].length));
+
+            var defaultDataTablesEntry = [];
+            for (var k of config.showEntryFields) {
+                defaultDataTablesEntry.push(srcEntry[k]
+                    ? srcEntry[k]
+                    : '');
+            }
+
+            data.push(defaultDataTablesEntry);
+        }
+
+        return data;
+    }
+
+    function renderDataTable(data) {
+        $('#' + config.dataTableRefId).DataTable({
+            "destroy": true,
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            // 'objId', 'state', 'precision', 'fileName', 'keySuggestion', 'key'
+            columnDefs: [
+                {
+                    // file_type
+                    "render": function (data, type, row) {
+                        var entry = faceDb[row[0]];
+                        return renderImagePart(entry, 200);
+                    },
+                    "targets": 0
+                },
+                {
+                    // state
+                    "render": function (data, type, row) {
+                        var entry = faceDb[row[0]];
+                        return entry.state;
+                    },
+                    "targets": 1
+                },
+                {
+                    // precision
+                    "render": function (data, type, row) {
+                        var entry = faceDb[row[0]];
+                        return entry.precision;
+                    },
+                    "targets": 2
+                },
+                {
+                    // id
+                    "render": function (data, type, row) {
+                        return row[0];
+                    },
+                    "targets": 3
+                },
+                {
+                    // matches
+                    "render": function (data, type, row) {
+                        var entry = faceDb[row[0]];
+                        var matches = [];
+                        for (var match of entry['matches']) {
+                            var matchId = row[0] === match.ref1Id
+                                ? match.ref2Id
+                                : match.ref1Id;
+                            matches.push(renderImagePart(faceDb[matchId], 100));
+                        }
+
+                        return "<div  style='display: block; width: 550px'>" + matches.join('&nbsp;') + "</div>";
+                    },
+                    "targets": 4
+                }
+            ],
+            columns: [
+                {title: "Image"},
+                {title: "State"},
+                {title: "precision"},
+                {title: "Id"}
+            ],
+            data: data,
+            pageLength: '50'
+        });
+    }
+
+    function loadViewer(faceDbRecords, matchDbRecords) {
+        ids = {};
+
+        if (faceDbRecords) {
+            var data = mergeToViewerRecord(faceDbRecords, matchDbRecords);
+            renderDataTable(data);
+        }
+    }
+
+    function renderImagePart(entry, neededWith) {
+        var url = entry.fileName.startsWith('http')
+            ? entry.fileName
+            : "file:///" + entry.fileName;
+        var style = "background-image: url('" + url + "'); " +
+            "width: " + neededWith + "px; " +
+            "aspect-ratio: " + entry.objWidth / entry.objHeight + ";" +
+            "background-size:" + (entry.imgWidth * neededWith / entry.objWidth) + "px;" +
+            "background-position: " + Math.ceil(entry.objX / entry.imgWidth * 100) + "% " + Math.ceil(entry.objY /entry.imgHeight  * 100) + "%;" +
+            "background-repeat: no-repeat;" +
+            ""
+        ;
+
+        return '<div style="display: inline-block; ' + style + '"></div>';
+    }
+
+    function handleImportFaceDbJSONFileSelect(evt) {
+        var files = evt.target.files; // FileList object
+
+        // Loop through the FileList.
+        for (var i = 0, numFiles = files.length; i < numFiles; i++) {
+            var file = files[i];
+            var reader = new FileReader();
+
+            // config reader
+            reader.onload = function(res) {
+                console.log("read faceDb :" + file.name);
+                globFaceDbSrc = jQuery.parseJSON(res.target.result);
+                loadViewer(globFaceDbSrc, globMatchDbSrc);
+            };
+
+            // read the file
+            reader.readAsText(file);
+
+            i = files.length + 1000;
+        }
+    }
+
+    function handleImportMatchDbJSONFileSelect(evt) {
+        var files = evt.target.files; // FileList object
+
+        // Loop through the FileList.
+        for (var i = 0, numFiles = files.length; i < numFiles; i++) {
+            var file = files[i];
+            var reader = new FileReader();
+
+            // config reader
+            reader.onload = function(res) {
+                console.log("read faceDb :" + file.name);
+                globMatchDbSrc = jQuery.parseJSON(res.target.result);
+                loadViewer(globFaceDbSrc, globMatchDbSrc);
+            };
+
+            // read the file
+            reader.readAsText(file);
+
+            i = files.length + 1000;
+        }
+    }
+
+    configureUI(config);
+
+</script>
+
+</body>
+</html>

@@ -37,11 +37,11 @@ npm run run-imagefile-detector -- --sourceDir f:/tmp/image-src/bla --debug 1 --d
 ```
 
 ## face-matcher on cache-files with humanapi-detector-results
-- 
+- do matching
 ```bash
 npm run run-face-matcher -- --faceDbFile f:/tmp/image-src/facedb.json --matchDbFile f:/tmp/image-src/matchdb.json --cacheFiles f:/tmp/image-src/bla/.mycmsod-cache.json --minSimilarity 0.6 --minFacePrecision 0.5 --debug
 ```
-
+- check faces+matches in [FaceMatch-Viewer](devtools/face-match-viewer.html)
 
 ## services
 - decompress zstd-file
