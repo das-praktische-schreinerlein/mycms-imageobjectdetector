@@ -1,6 +1,7 @@
 import {ObjectDetectionDetectedObject} from '@dps/mycms-commons/dist/commons/model/objectdetection-model';
 import {Tensor3D} from '@tensorflow/tfjs-core';
 import {TensorUtils} from './utils/tensor-utils';
+import {ExtendedImageData} from '../common/utils/image-utils';
 
 export enum DetectorInputRequirement {
     IMAGEDIMENSION, IMAGEDATA, TENSOR
@@ -12,8 +13,8 @@ export abstract class AbstractObjectDetector {
 
     public detectFromImageUrl(imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            TensorUtils.readImageFromLocation(imageUrl).then(posenetInput => {
-                this.detectFromCommonInput(posenetInput, imageUrl).then(detectedObjects => {
+            TensorUtils.readImageFromLocation(imageUrl).then(input => {
+                this.detectFromCommonInput(input, imageUrl).then(detectedObjects => {
                     return resolve(detectedObjects);
                 }).catch(error => {
                     return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on location:' + imageUrl + ' - ' + error);
@@ -28,7 +29,7 @@ export abstract class AbstractObjectDetector {
         return this.detectFromCommonInput(tensor, imageUrl);
     }
 
-    public abstract detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]>;
+    public abstract detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]>;
 
     public abstract getExpectedInputRequirements(): DetectorInputRequirement;
 

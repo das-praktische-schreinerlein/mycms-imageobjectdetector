@@ -5,6 +5,7 @@ import {Tensor3D} from '@tensorflow/tfjs-core';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 
 export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
@@ -58,14 +59,14 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             return this.detector.detect(input).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertDetectedObjectToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i));
+                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i, input));
                 }
                 input = undefined;
 

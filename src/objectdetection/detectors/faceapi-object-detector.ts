@@ -5,6 +5,7 @@ import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorUtils} from '../utils/detector-utils';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 // TODO - migrate faceapi
 // import * as faceapi from 'face-api.js';
@@ -57,9 +58,9 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
-            let localTensor: Tensor3D = input['width'] ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS) : undefined;
+            let localTensor: Tensor3D = input['width'] ? TensorUtils.imageToTensor3D(<ExtendedImageData>input, TensorUtils.NUMBER_OF_CHANNELS) : undefined;
             let tensor: Tensor3D = input['width'] ? localTensor : <Tensor3D>input;
             // return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
             return Promise.reject().then((predictions: any) => {
@@ -67,7 +68,7 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertFaceDetectionToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl));
+                            this, predictions[i], imageUrl, input));
                 }
 
                 localTensor = DetectorUtils.disposeObj(localTensor);

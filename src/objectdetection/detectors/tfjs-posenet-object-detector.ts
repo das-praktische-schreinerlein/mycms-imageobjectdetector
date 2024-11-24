@@ -7,6 +7,7 @@ import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {ModelConfig} from '@tensorflow-models/posenet/dist/posenet_model';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 
 export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
@@ -65,7 +66,7 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             const config: MultiPersonInferenceConfig = {
                 flipHorizontal: this.flipHorizontal,
@@ -77,7 +78,7 @@ export class TFJsPosenetObjectDetector extends AbstractObjectDetector {
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertPoseToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i));
+                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i, input));
                 }
 
                 input = undefined;

@@ -11,6 +11,7 @@ import mkdirp from 'mkdirp';
 import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-object-detector';
 import {FileUtils} from '../../common/utils/file-utils';
 import {Tensor3D} from '@tensorflow/tfjs-core';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 export class DetectorUtils {
     public static initDetectors(detectors: AbstractObjectDetector[]): Promise<AbstractObjectDetector[]> {
@@ -91,7 +92,7 @@ export class DetectorUtils {
                     return resolve(detectedCachedObjects);
                 }
 
-                let dataPromise: Promise<Tensor3D | ImageData>;
+                let dataPromise: Promise<Tensor3D | ExtendedImageData>;
                 if (expectedInputRequirements[DetectorInputRequirement.TENSOR]) {
                     dataPromise = TensorUtils.readImageTensorFromLocation(imageUrl);
                 } else if (expectedInputRequirements[DetectorInputRequirement.IMAGEDATA]) {

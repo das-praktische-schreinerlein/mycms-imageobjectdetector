@@ -98,6 +98,10 @@ async function main() {
     myLog('DO - check facesToFind', countFaceToFind);
     for (let i = 0; i < countFaceToFind; i++) {
         const faceToFind = facesToFind[i];
+        if (faceToFind === undefined) {
+            console.error('NO - faceToFind', i, faceToFind);
+            return false;
+        }
 
         if (await existsFaceInFaceDB(faceToFind) < 0) {
             console.log('DO - new faceToFind', i, faceToFind.objId);

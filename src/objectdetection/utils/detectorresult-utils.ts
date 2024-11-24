@@ -4,6 +4,8 @@ import {Pose} from '@tensorflow-models/posenet';
 //import {FaceDetection} from 'face-api.js';
 import {AbstractObjectDetector} from '../abstract-object-detector';
 import {BodyResult, FaceResult, ObjectResult, PersonResult, Result} from '@vladmandic/human';
+import {Tensor3D} from '@tensorflow/tfjs-core';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 export interface MobileNetClass {
     className: string;
@@ -23,7 +25,8 @@ export class DetectorResultUtils {
 
     public static convertDetectedObjectToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                        detectedObj: DetectedObject,
-                                                                       imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+                                                                       imageUrl: string, imageDim: number[], id: any,
+                                                                       input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject {
         if (detectedObj === undefined || detectedObj === null) {
             return undefined;
         }
@@ -44,13 +47,15 @@ export class DetectorResultUtils {
             precision: detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         };
     }
 
     public static convertPoseToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                              detectedObj: Pose,
-                                                             imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+                                                             imageUrl: string, imageDim: number[], id: any,
+                                                             input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject {
         if (detectedObj === undefined || detectedObj === null) {
             return undefined;
         }
@@ -72,13 +77,15 @@ export class DetectorResultUtils {
             precision: isNaN(detectedObj.score) ? undefined : detectedObj.score,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         };
     }
 
     public static convertMobileNetClassToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                        detectedObj: MobileNetClass,
-                                                                       imageUrl: string, imageDim: number[], id: any): ObjectDetectionDetectedObject {
+                                                                       imageUrl: string, imageDim: number[], id: any,
+                                                                       input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject {
         if (detectedObj === undefined || detectedObj === null) {
             return undefined;
         }
@@ -99,6 +106,7 @@ export class DetectorResultUtils {
             precision: detectedObj.probability,
             imgWidth: imageDim && imageDim.length >= 2 ? imageDim[0] : undefined,
             imgHeight: imageDim && imageDim.length >= 2 ? imageDim[1] : undefined,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         };
     }
@@ -107,7 +115,8 @@ export class DetectorResultUtils {
                                                                       // TODO - migrate faceapi
                                                                       //       detectedObj: FaceDetection,
                                                                       detectedObj: any,
-                                                                      imageUrl: string): ObjectDetectionDetectedObject {
+                                                                      imageUrl: string,
+                                                                      input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject {
         if (detectedObj === undefined || detectedObj === null) {
             return undefined;
         }
@@ -128,6 +137,7 @@ export class DetectorResultUtils {
             precision: detectedObj.classScore,
             imgWidth: detectedObj.imageWidth,
             imgHeight: detectedObj.imageHeight,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         };
     }
@@ -136,7 +146,8 @@ export class DetectorResultUtils {
                                                                            result: Result,
                                                                            detectedObj: FaceResult,
                                                                            imageUrl: string,
-                                                                           parentId: string): ObjectDetectionDetectedObject[] {
+                                                                           parentId: string,
+                                                                           input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
         if (detectedObj === undefined || detectedObj === null) {
             return faceresults;
@@ -161,6 +172,7 @@ export class DetectorResultUtils {
             objDetails: detectedObj.annotations ? JSON.stringify(detectedObj.annotations): undefined,
             imgWidth: result.width,
             imgHeight: result.height,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         });
 
@@ -181,6 +193,7 @@ export class DetectorResultUtils {
                 precision: detectedObj.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
+                imgOrientation: this.createOrientation(input),
                 fileName: imageUrl
             });
         }
@@ -203,6 +216,7 @@ export class DetectorResultUtils {
                 precision: emotion.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
+                imgOrientation: this.createOrientation(input),
                 fileName: imageUrl
             });
         }
@@ -225,6 +239,7 @@ export class DetectorResultUtils {
                 precision: race.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
+                imgOrientation: this.createOrientation(input),
                 fileName: imageUrl
             });
         }
@@ -246,6 +261,7 @@ export class DetectorResultUtils {
                 precision: detectedObj.genderScore,
                 imgWidth: result.width,
                 imgHeight: result.height,
+                imgOrientation: this.createOrientation(input),
                 fileName: imageUrl
             });
         }
@@ -256,7 +272,8 @@ export class DetectorResultUtils {
     public static convertHumanObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                              result: Result,
                                                                              detectedObj: ObjectResult,
-                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                             imageUrl: string,
+                                                                             input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
         if (detectedObj === undefined || detectedObj === null) {
             return faceresults;
@@ -279,6 +296,7 @@ export class DetectorResultUtils {
             precision: detectedObj.score,
             imgWidth: result.width,
             imgHeight: result.height,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         });
 
@@ -299,6 +317,7 @@ export class DetectorResultUtils {
                 precision: detectedObj.score,
                 imgWidth: result.width,
                 imgHeight: result.height,
+                imgOrientation: this.createOrientation(input),
                 fileName: imageUrl
             });
         }
@@ -309,7 +328,8 @@ export class DetectorResultUtils {
     public static convertHumanBodyDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                            result: Result,
                                                                            detectedObj: BodyResult,
-                                                                           imageUrl: string, parentId: string): ObjectDetectionDetectedObject[] {
+                                                                           imageUrl: string, parentId: string,
+                                                                           input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
         if (detectedObj === undefined || detectedObj === null) {
             return faceresults;
@@ -333,6 +353,7 @@ export class DetectorResultUtils {
             precision: detectedObj.score,
             imgWidth: result.width,
             imgHeight: result.height,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         });
 
@@ -342,7 +363,8 @@ export class DetectorResultUtils {
     public static convertHumanPersonDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                              result: Result,
                                                                              detectedObj: PersonResult,
-                                                                             imageUrl: string): ObjectDetectionDetectedObject[] {
+                                                                             imageUrl: string,
+                                                                             input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject[] {
         const faceresults: ObjectDetectionDetectedObject[] = [];
         if (detectedObj === undefined || detectedObj === null) {
             return faceresults;
@@ -352,13 +374,15 @@ export class DetectorResultUtils {
         const precisions = [];
         if (detectedObj.face) {
             faceresults.push(
-                ...DetectorResultUtils.convertHumanFaceDetectionToObjectDetectionDetectedObject(detector, result, detectedObj.face, imageUrl, personId));
+                ...DetectorResultUtils.convertHumanFaceDetectionToObjectDetectionDetectedObject(
+                    detector, result, detectedObj.face, imageUrl, personId, input));
             precisions.push(detectedObj.face.faceScore);
         }
 
         if (detectedObj.body) {
             faceresults.push(...
-                DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(detector, result, detectedObj.body, imageUrl, personId))
+                DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(
+                    detector, result, detectedObj.body, imageUrl, personId, input))
             precisions.push(detectedObj.body.score);
         }
 
@@ -384,13 +408,15 @@ export class DetectorResultUtils {
             precision: maxPrecision,
             imgWidth: result.width,
             imgHeight: result.height,
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         }].concat(faceresults);
     }
 
     public static convertPicasaObjectDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,
                                                                               detectedObj: PicasaObjectDetectionResult,
-                                                                              imageUrl: string): ObjectDetectionDetectedObject {
+                                                                              imageUrl: string,
+                                                                              input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject {
         if (detectedObj === undefined || detectedObj === null) {
             return undefined;
         }
@@ -406,7 +432,9 @@ export class DetectorResultUtils {
             objWidth: detectedObj.rectangle[2] - detectedObj.rectangle[0],
             objHeight: detectedObj.rectangle[3] - detectedObj.rectangle[1],
             precision: 1,
+            imgWidth: detectedObj.imageDimension[0],
             imgHeight: detectedObj.imageDimension[1],
+            imgOrientation: this.createOrientation(input),
             fileName: imageUrl
         };
     }
@@ -415,4 +443,7 @@ export class DetectorResultUtils {
         return source.replace(/[^A-Za-z0-9_]/g, '');
     }
 
+    public static createOrientation(input: Tensor3D|ExtendedImageData): string {
+        return input['orientation'];
+    }
 }

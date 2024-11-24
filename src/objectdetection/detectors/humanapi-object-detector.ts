@@ -6,6 +6,7 @@ import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
 import {DetectorUtils} from '../utils/detector-utils';
 import * as tf from '@tensorflow/tfjs-node';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 
 export class HumanApiObjectDetector extends AbstractObjectDetector {
@@ -132,20 +133,20 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             let localTensor: Tensor3D = undefined;
             let tensor = undefined;
             /* FIXME different tensors from human and tfjs
             let localTensor: Tensor3D = input['width']
-                ? TensorUtils.imageToTensor3D(<ImageData>input, TensorUtils.NUMBER_OF_CHANNELS)
+                ? TensorUtils.imageToTensor3D(<ExtendedImageData>input, TensorUtils.NUMBER_OF_CHANNELS)
                 : undefined;
             let tensor = undefined; input['width']
                 ? localTensor
                 : <Tensor3D>input;
             */
 
-            return this.detector.detect(<ImageData>input).then(result => {
+            return this.detector.detect(<ExtendedImageData>input).then(result => {
                 const error = result === undefined
                     ? 'no result'
                     : result.error;
@@ -163,22 +164,22 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
                 const ids = {};
                 for (let i = 0; i < result.object.length; i++) {
                     mappedResults.push(
-                        ...DetectorResultUtils.convertHumanObjectDetectionToObjectDetectionDetectedObject(this, result, result.object[i], imageUrl));
+                        ...DetectorResultUtils.convertHumanObjectDetectionToObjectDetectionDetectedObject(this, result, result.object[i], imageUrl, input));
                 }
 
                 for (let i = 0; i < result.persons.length; i++) {
                     mappedResults.push(
-                        ...DetectorResultUtils.convertHumanPersonDetectionToObjectDetectionDetectedObject(this, result, result.persons[i], imageUrl))
+                        ...DetectorResultUtils.convertHumanPersonDetectionToObjectDetectionDetectedObject(this, result, result.persons[i], imageUrl, input))
                 }
 
                 for (let i = 0; i < result.face.length; i++) {
                     mappedResults.push(
-                        ...DetectorResultUtils.convertHumanFaceDetectionToObjectDetectionDetectedObject(this, result, result.face[i], imageUrl, undefined));
+                        ...DetectorResultUtils.convertHumanFaceDetectionToObjectDetectionDetectedObject(this, result, result.face[i], imageUrl, undefined, input));
                 }
 
                 for (let i = 0; i < result.body.length; i++) {
                     mappedResults.push(...
-                        DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(this, result, result.body[i], imageUrl, undefined))
+                        DetectorResultUtils.convertHumanBodyDetectionToObjectDetectionDetectedObject(this, result, result.body[i], imageUrl, undefined, input))
                 }
 
                 let mappedResult: ObjectDetectionDetectedObject;

@@ -2,13 +2,17 @@ import * as exifReader from 'exif';
 import * as jpeg from 'jpeg-js';
 import {createCanvas, Image} from 'canvas';
 
+export interface ExtendedImageData extends ImageData {
+    orientation: string;
+}
+
 export class ImageUtils {
 
-    public static readImageDataFromBuffer(buf):ImageData  {
+    public static readImageDataFromBuffer(buf: Buffer):ExtendedImageData  {
         return this.readImageDataFromBufferWithCanvas(buf);
     }
 
-    public static readImageDataFromBufferWithCanvas(buf):ImageData  {
+    public static readImageDataFromBufferWithCanvas(buf: Buffer):ExtendedImageData  {
         const start = new Date();
         const img = new Image();
         img.onerror = err => { throw err };
@@ -20,21 +24,23 @@ export class ImageUtils {
         // console.debug('duration decoding image via canvas:', new Date().getTime() - start.getTime());
         return {
             colorSpace: 'srgb',
+            orientation: undefined,
             data: ret.data,
             height: ret.height,
             width: ret.width
         };
     }
 
-    public static readImageDataFromBufferWithJpeg(buf): ImageData {
+    public static readImageDataFromBufferWithJpeg(buf: Buffer): ExtendedImageData {
         const start = new Date();
         const ret = jpeg.decode(buf, true);
         // console.debug('duration decoding image via jpeg:', new Date().getTime() - start.getTime());
+
         return ret;
     }
 
-    public static readImageMetaDataFromBuffer(buf): Promise<ImageData> {
-        return new Promise<ImageData>((resolve, reject) => {
+    public static readImageMetaDataFromBuffer(buf: Buffer): Promise<ExtendedImageData> {
+        return new Promise<ExtendedImageData>((resolve, reject) => {
             return ImageUtils.readExifForImage(buf).then(exif => {
                 buf = undefined;
                 if (!exif || !exif['exif']) {
@@ -45,6 +51,9 @@ export class ImageUtils {
                 return resolve({
                     colorSpace: 'srgb',
                     data: undefined,
+                    orientation: exif['image'] && exif['image']['Orientation']
+                        ? exif['image']['Orientation']
+                        : undefined,
                     width: exif['exif']['ExifImageWidth'] || exif['exif']['PixelXDimension'],
                     height: exif['exif']['ExifImageHeight'] || exif['exif']['PixelYDimension'],
                 });
@@ -55,10 +64,10 @@ export class ImageUtils {
         });
     }
 
-    public static readExifForImage(buf: string): Promise<{}> {
+    public static readExifForImage(buf: string|Buffer): Promise<{}> {
         return new Promise<{}>((resolve, reject) => {
             try {
-                new exifReader.ExifImage({ image : buf }, function (error, exifData) {
+                new exifReader.ExifImage({ image : buf}, function (error, exifData) {
                     buf = undefined;
                     if (error) {
                         return reject(error);
@@ -73,7 +82,7 @@ export class ImageUtils {
         });
     }
 
-    public static imageToInt32Array(image: ImageData, numChannels: number): Int32Array {
+    public static imageToInt32Array(image: ExtendedImageData, numChannels: number): Int32Array {
         const pixels = image.data;
         const numPixels = image.width * image.height;
         const values = new Int32Array(numPixels * numChannels);

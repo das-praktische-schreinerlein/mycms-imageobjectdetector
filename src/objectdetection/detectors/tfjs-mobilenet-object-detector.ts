@@ -6,6 +6,7 @@ import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-obje
 import {DetectorResultUtils} from '../utils/detectorresult-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {LogUtils} from '@dps/mycms-commons/dist/commons/utils/log.utils';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 
 export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
@@ -64,14 +65,14 @@ export class TFJsMobilenetObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             return this.detector.classify(input, this.maxPredictionNumber).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
                 for (let i = 0; i < predictions.length; i++) {
                     detectedObjects.push(
                         DetectorResultUtils.convertMobileNetClassToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i));
+                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i, input));
                 }
 
                 input = undefined;

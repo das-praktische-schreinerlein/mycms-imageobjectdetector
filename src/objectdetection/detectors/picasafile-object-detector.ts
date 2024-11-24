@@ -4,6 +4,7 @@ import {AbstractObjectDetector, DetectorInputRequirement} from '../abstract-obje
 import {FileUtils} from '../../common/utils/file-utils';
 import {TensorUtils} from '../utils/tensor-utils';
 import {DetectorResultUtils, PicasaObjectDetectionResult} from '../utils/detectorresult-utils';
+import {ExtendedImageData} from '../../common/utils/image-utils';
 
 export class PicasaFileObjectDetector extends AbstractObjectDetector {
     constructor () {
@@ -36,7 +37,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
         });
     }
 
-    detectFromCommonInput(input: Tensor3D|ImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
+    detectFromCommonInput(input: Tensor3D|ExtendedImageData, imageUrl: string): Promise<ObjectDetectionDetectedObject[]> {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             // read
             const picasaFile = FileUtils.getDirectoryFromFilePath(imageUrl) + '.picasa.ini';
@@ -140,7 +141,7 @@ export class PicasaFileObjectDetector extends AbstractObjectDetector {
                             };
                             detectedObjects.push(
                                 DetectorResultUtils.convertPicasaObjectDetectionToObjectDetectionDetectedObject(
-                                    this, picasaObject, imageUrl))
+                                    this, picasaObject, imageUrl, input))
                         }
                     }
                 }

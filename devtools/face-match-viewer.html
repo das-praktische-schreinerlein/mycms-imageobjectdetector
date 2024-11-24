@@ -62,7 +62,7 @@
         dataTableRefId: 'syncfiles',
         showEntryFields: ['objId', 'state', 'precision', 'fileName', 'keySuggestion', 'key'],
         minSimilarity: 0.6,
-        minPrecision: 0.6,
+        minPrecision: 0.2,
         maxMatches: 5
     }
 
@@ -212,11 +212,19 @@
         var url = entry.fileName.startsWith('http')
             ? entry.fileName
             : "file:///" + entry.fileName;
-        var style = "background-image: url('" + url + "'); " +
+        var style = entry.imgOrientation === 8 || entry.imgOrientation === 6
+            ? "background-image: url('" + url + "'); " +
+            "width: " + neededWith + "px; " +
+            "aspect-ratio: " + entry.objHeight / entry.objWidth + ";" +
+            "background-size:" + (neededWith * entry.imgHeight / entry.objHeight) + "px;" +
+            "background-position: " + ((entry.imgHeight - entry.objY - entry.objHeight) / entry.imgHeight * 100) + "% " + (entry.objX / entry.imgWidth  * 100) + "%;" +
+            "background-repeat: no-repeat;" +
+            ""
+            : "background-image: url('" + url + "'); " +
             "width: " + neededWith + "px; " +
             "aspect-ratio: " + entry.objWidth / entry.objHeight + ";" +
-            "background-size:" + (entry.imgWidth * neededWith / entry.objWidth) + "px;" +
-            "background-position: " + Math.ceil(entry.objX / entry.imgWidth * 100) + "% " + Math.ceil(entry.objY /entry.imgHeight  * 100) + "%;" +
+            "background-size:" + (neededWith * entry.imgWidth / entry.objWidth) + "px;" +
+            "background-position: " + (entry.objX / entry.imgWidth * 100) + "% " + (entry.objY / entry.imgHeight * 100) + "%;" +
             "background-repeat: no-repeat;" +
             ""
         ;
