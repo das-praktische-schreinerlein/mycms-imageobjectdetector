@@ -44,6 +44,9 @@
         <b>FaceMatch-Viewer</b>
         <input type="file" id="importFaceDbJSONFile" style="width: 200px">
         <input type="file" id="importMatchDbJSONFile" style="width: 200px">
+        minPrecision: <input type="text" pattern="[0-9]+" id="minPrecision" style="width: 100px">
+        minSimilarity: <input type="text" pattern="[0-9]+" id="minSimilarity" style="width: 100px">
+        maxMatches: <input type="text" pattern="[0-9]+" id="maxMatches" style="width: 100px">
     </div>
 </div>
 <div id="toolsDummy"> </div>
@@ -57,12 +60,10 @@
 
 <script>
     var config = {
-        importFaceDbJSONFileRefId: 'importFaceDbJSONFile',
-        importMatchDbJSONFileRefId: 'importMatchDbJSONFile',
         dataTableRefId: 'syncfiles',
         showEntryFields: ['objId', 'state', 'precision', 'fileName', 'keySuggestion', 'key'],
-        minSimilarity: 0.6,
         minPrecision: 0.2,
+        minSimilarity: 0.6,
         maxMatches: 5
     }
 
@@ -71,19 +72,41 @@
     var faceDb = {};
 
     function configureUI(config) {
-        var fileFaceDbDialog = document.getElementById(config.importFaceDbJSONFileRefId);
-        fileFaceDbDialog.addEventListener('change', handleImportFaceDbJSONFileSelect, false);
-        var matchDbDialog = document.getElementById(config.importMatchDbJSONFileRefId);
-        matchDbDialog.addEventListener('change', handleImportMatchDbJSONFileSelect, false);
+        document.getElementById('importFaceDbJSONFile').addEventListener('change', handleImportFaceDbJSONFileSelect, false);
+        document.getElementById('importMatchDbJSONFile').addEventListener('change', handleImportMatchDbJSONFileSelect, false);
+
+        var minPrecisionDialog = document.getElementById('minPrecision');
+        minPrecisionDialog.addEventListener('change', function (event) {
+            config.minPrecision = event.target.value;
+            loadViewer(globFaceDbSrc, globMatchDbSrc);
+        }, false);
+        minPrecisionDialog.value = config.minPrecision;
+
+        var minSimilarityDialog = document.getElementById('minSimilarity');
+        minSimilarityDialog.addEventListener('change', function (event) {
+            config.minSimilarity = event.target.value;
+            loadViewer(globFaceDbSrc, globMatchDbSrc);
+        }, false);
+        minSimilarityDialog.value = config.minSimilarity;
+
+        var maxMatchesDialog = document.getElementById('maxMatches');
+        maxMatchesDialog.addEventListener('change', function (event) {
+            config.maxMatches = event.target.value;
+            loadViewer(globFaceDbSrc, globMatchDbSrc);
+        }, false);
+        maxMatchesDialog.value = config.maxMatches;
     }
 
     function mergeToViewerRecord(faceDocs, matchDocs) {
+        console.log("DO mergeToViewerRecord", faceDocs.length, matchDocs.length, config.minPrecision, config.minSimilarity, config.maxMatches);
+        faceDb = {};
         var faces = [];
-        for (const face of faceDocs) {
+        for (const origFace of faceDocs) {
+            var face = {...origFace}
+            faceDb[face.objId] = face;
             if (face['matches'] === undefined) {
                 face['matches'] = [];
             }
-            faceDb[face.objId] = face;
 
             if (config.minPrecision > face.precision) {
                 console.log('SKIP face because of precision', config.minPrecision, face.precision, face)

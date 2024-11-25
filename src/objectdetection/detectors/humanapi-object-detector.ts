@@ -73,13 +73,17 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
                 filter: {
                     enabled: true,
                     flip: true,
+                    equalization: true
                 },
                 gesture: {
                     enabled: true,
                 },
                 face: {
                     detector: {
-                        maxDetected: 20
+                        maxDetected: 20,
+                        rotation: true,
+                        // mask: true, // FIXME - throws (node:2840) UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'backend' of undefined
+                        return: true
                     },
                     mesh: {
                         enabled: true
