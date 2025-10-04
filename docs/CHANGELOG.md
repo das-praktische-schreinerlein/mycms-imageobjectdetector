@@ -2,7 +2,7 @@
  
 # Versions
 
-## 2.0.0
+## 2.0.0 (2025-10-04)
 - updated dependencies
 - updated models to tensorflow-2
 - removed faceapi because its deprecated
