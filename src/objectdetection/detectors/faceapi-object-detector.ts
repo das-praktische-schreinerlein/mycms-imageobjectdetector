@@ -65,7 +65,14 @@ export class FaceApiObjectDetector extends AbstractObjectDetector {
             // return faceapi.detectAllFaces(tensor).run().then((predictions: FaceDetection[]) => {
             return Promise.reject().then((predictions: any) => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
+                let detectedObject;
                 for (let i = 0; i < predictions.length; i++) {
+                    detectedObject = predictions[i];
+                    if (detectedObject.class === undefined || detectedObject.class === null || detectedObject.class === '') {
+                        console.log('SKIPPED empty detectedObject - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:',
+                            imageUrl, detectedObject);
+                    }
+
                     detectedObjects.push(
                         DetectorResultUtils.convertFaceDetectionToObjectDetectionDetectedObject(
                             this, predictions[i], imageUrl, input));

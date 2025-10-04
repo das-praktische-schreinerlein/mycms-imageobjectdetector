@@ -244,7 +244,7 @@ export class DetectorResultUtils {
             });
         }
 
-        if (detectedObj.gender) {
+        if (detectedObj.gender && detectedObj.gender !== 'unknown') {
             faceresults.push(<ObjectDetectionDetectedObject>{
                 detector: detector.getDetectorId(),
                 key: 'face_gender_' + detectedObj.gender,
@@ -330,12 +330,13 @@ export class DetectorResultUtils {
                                                                            detectedObj: BodyResult,
                                                                            imageUrl: string, parentId: string,
                                                                            input: Tensor3D|ExtendedImageData): ObjectDetectionDetectedObject[] {
-        const faceresults: ObjectDetectionDetectedObject[] = [];
-        if (detectedObj === undefined || detectedObj === null) {
-            return faceresults;
+        const bodyresults: ObjectDetectionDetectedObject[] = [];
+        if (detectedObj === undefined || detectedObj === null
+            || ! (detectedObj.score > 0)) {
+            return bodyresults;
         }
 
-        faceresults.push(<ObjectDetectionDetectedObject>{
+        bodyresults.push(<ObjectDetectionDetectedObject>{
             detector: detector.getDetectorId(),
             key: 'body',
             keySuggestion: 'body',
@@ -357,7 +358,7 @@ export class DetectorResultUtils {
             fileName: imageUrl
         });
 
-        return faceresults;
+        return bodyresults;
     }
 
     public static convertHumanPersonDetectionToObjectDetectionDetectedObject(detector: AbstractObjectDetector,

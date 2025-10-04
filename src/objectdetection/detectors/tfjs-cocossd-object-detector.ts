@@ -63,10 +63,17 @@ export class TFJsCocossdObjectDetector extends AbstractObjectDetector {
         return new Promise<ObjectDetectionDetectedObject[]>((resolve, reject) => {
             return this.detector.detect(input).then(predictions => {
                 const detectedObjects: ObjectDetectionDetectedObject[] = [];
+                let detectedObject: cocoSsd.DetectedObject;
                 for (let i = 0; i < predictions.length; i++) {
+                    detectedObject = predictions[i];
+                    if (detectedObject.class === undefined || detectedObject.class === null || detectedObject.class === '') {
+                        console.log('SKIPPED empty detectedObject - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:',
+                            imageUrl, detectedObject);
+                    }
+
                     detectedObjects.push(
                         DetectorResultUtils.convertDetectedObjectToObjectDetectionDetectedObject(
-                            this, predictions[i], imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i, input));
+                            this, detectedObject, imageUrl, TensorUtils.getImageDimensionsFromCommonInput(input), i, input));
                 }
                 input = undefined;
 

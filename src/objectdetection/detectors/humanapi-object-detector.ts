@@ -208,8 +208,7 @@ export class HumanApiObjectDetector extends AbstractObjectDetector {
                 localTensor = DetectorUtils.disposeObj(localTensor);
                 input = undefined;
                 tensor = undefined;
-                reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
-                return;
+                return reject('ERROR - detecting objects with ' + this.getDetectorId() + ' on tensor from imageUrl:' + imageUrl + ' - ' + error);
             });
         });
     }

@@ -11,6 +11,8 @@
 - improved caching
 - added cache-utilities
 - added face-matcher-utilities
+- fixed null-results
+- updated installation-doc to get gpu-support running
 
 ### new features
 - added new detector human (successor of faceapi)
@@ -20,10 +22,11 @@
 
 ### improvements
 - updated dependencies
+- updated installation-doc to get gpu-support running
 - improved caching
 
 ### bug fixes
-- none
+- fixed null-results
 
 ### breaking changes
 - updated models to tensorflow-2
